@@ -1,0 +1,167 @@
+---
+/**
+ * PhoneFrame — the device chrome only. Put whatever you like inside it.
+ *
+ *   <PhoneFrame>
+ *     <div class="p-4">…your screen…</div>
+ *   </PhoneFrame>
+ *
+ * Bezel, radius and shadow are lifted from the v2 marketing page
+ * (myridesg-v2/apps/web/app/(marketing)/page.module.css) so the device reads
+ * identically across both sites:
+ *
+ *   .featurePanelPhone img  → variant="light"  · #17181a bezel, softer shadow
+ *   .connectedPhone img     → variant="dark"   · #26272b bezel, deeper shadow
+ *   .privatePhone           → variant="plain"  · #191919 bezel, 44px radius
+ *
+ * The frame locks itself to 9:19.57, the exact ratio of the real app captures
+ * in src/assets/app/ (549 x 1194). Anything slotted in therefore sits in a
+ * true-to-life screen area rather than a box that happens to be tall.
+ */
+
+interface Props {
+  /** Matches the surface behind it. Defaults to the light-section treatment. */
+  variant?: 'light' | 'dark' | 'plain'
+  /** Screen width in px, excluding the bezel. Height follows the ratio. */
+  width?: number
+  /** Drop the status bar when the slotted content draws its own. */
+  chrome?: boolean
+  class?: string
+}
+
+const { variant = 'light', width = 370, chrome = true, class: className = '' } = Astro.props
+
+const VARIANTS = {
+  light: {
+    bezel: '#17181a',
+    border: 9,
+    radius: 52,
+    shadow: '0 44px 90px rgba(21, 23, 27, 0.32)',
+  },
+  dark: {
+    bezel: '#26272b',
+    border: 9,
+    radius: 52,
+    shadow: '0 50px 110px rgba(0, 0, 0, 0.55)',
+  },
+  plain: {
+    bezel: '#191919',
+    border: 8,
+    radius: 44,
+    shadow: '0 30px 80px rgba(27, 28, 31, 0.18)',
+  },
+} as const
+
+const v = VARIANTS[variant]
+
+// 549 x 1194 is the native size of the app captures; every frame follows it.
+const SCREEN_RATIO = 1194 / 549
+const height = Math.round(width * SCREEN_RATIO)
+
+const frameStyle = [
+  `--pf-width:${width}px`,
+  `--pf-height:${height}px`,
+  `--pf-bezel:${v.bezel}`,
+  `--pf-border:${v.border}px`,
+  `--pf-radius:${v.radius}px`,
+  `--pf-shadow:${v.shadow}`,
+].join(';')
+---
+
+<div class:list={['phone-frame', className]} style={frameStyle}>
+  <div class="phone-frame__screen">
+    {
+      chrome && (
+        <div class="phone-frame__status">
+          <span>9:41</span>
+          <span class="phone-frame__status-icons" aria-hidden="true">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor">
+              <rect x="0" y="7" width="3" height="4" rx="0.5" />
+              <rect x="4.5" y="5" width="3" height="6" rx="0.5" />
+              <rect x="9" y="2.5" width="3" height="8.5" rx="0.5" />
+              <rect x="13.5" y="0" width="3" height="11" rx="0.5" />
+            </svg>
+            <svg width="20" height="11" viewBox="0 0 20 11" fill="none">
+              <rect
+                x="0.5"
+                y="0.5"
+                width="16"
+                height="10"
+                rx="2.5"
+                stroke="currentColor"
+                opacity="0.5"
+              />
+              <rect x="2" y="2" width="12" height="7" rx="1.2" fill="currentColor" />
+              <path
+                d="M18 4v3a2 2 0 0 0 0-3Z"
+                fill="currentColor"
+                opacity="0.5"
+              />
+            </svg>
+          </span>
+        </div>
+      )
+    }
+
+    <div class="phone-frame__content">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .phone-frame {
+    width: var(--pf-width);
+    max-width: 100%;
+    flex-shrink: 0;
+    border: var(--pf-border) solid var(--pf-bezel);
+    border-radius: var(--pf-radius);
+    background: var(--pf-bezel);
+    box-shadow: var(--pf-shadow);
+  }
+
+  .phone-frame__screen {
+    display: flex;
+    flex-direction: column;
+    height: var(--pf-height);
+    max-height: calc((100vw - 2 * var(--pf-border)) * 2.1749);
+    overflow: hidden;
+    /* Inner radius = outer radius minus the bezel, so the corners stay concentric. */
+    border-radius: calc(var(--pf-radius) - var(--pf-border));
+    background: var(--color-paper);
+  }
+
+  .phone-frame__status {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: currentColor;
+  }
+
+  .phone-frame__status-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .phone-frame__content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Scale down rather than overflow on narrow viewports. */
+  @media (max-width: 26rem) {
+    .phone-frame {
+      width: 100%;
+    }
+    .phone-frame__screen {
+      height: auto;
+      aspect-ratio: 549 / 1194;
+    }
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+import StoreButtons from './StoreButtons.astro'
+
+// States current pricing only. "Free forever" is explicitly forbidden by the
+// Claim Guardrails, so the copy commits to what is true today and no further.
+---
+
+<section id="pricing" class="bg-paper py-20 md:py-28">
+  <div class="shell">
+    <div class="mx-auto max-w-xl rounded-3xl border-2 border-red px-8 py-12 text-center md:px-12 md:py-14">
+      <p class="eyebrow text-red">Pricing</p>
+
+      <h2 class="mt-4 text-display md:text-display-lg">Free for riders.</h2>
+
+      <p class="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted">
+        Tracking, reminders and the workshop directory are free to use. No trial
+        period, no card required.
+      </p>
+
+      <StoreButtons class="mt-8 justify-center" />
+
+      <p class="mt-6 text-sm text-muted">
+        Workshops pay for premium listings. Riders don't.
+      </p>
+    </div>
+  </div>
+</section>

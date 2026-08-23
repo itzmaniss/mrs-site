@@ -1,0 +1,29 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# tooling / agent state
+.claude-flow/
+.swarm/
+.DS_Store
+*.tsbuildinfo
+
+# local editor
+.vscode/
+.idea/
+
+# playwright-mcp scratch output
+.playwright-mcp/

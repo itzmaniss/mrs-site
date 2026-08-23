@@ -1,0 +1,182 @@
+---
+import ProseLayout from '@/layouts/ProseLayout.astro'
+
+// Ported verbatim from myridesg-v2/apps/web/app/privacy/page.tsx.
+//
+// NEEDS LEGAL REVIEW BEFORE LAUNCH: this text describes "the MyRide SG web
+// application, accessible at myridesg.com". With the product moving to native
+// iOS/Android, several clauses are now inaccurate — notably §1 (scope), §2
+// (Usage Data references browser type), and §10 (cookies and local storage).
+// Wording has deliberately NOT been altered here; changing legal copy is not a
+// developer's call. Flag to whoever owns compliance.
+---
+
+<ProseLayout
+  title="Privacy Policy"
+  description="How MyRide SG collects, uses, and protects your data."
+  meta="Last updated: 6 August 2026"
+>
+  <h2>1. Introduction</h2>
+  <p>
+    MyRide SG ("we", "us", or "our") operates the MyRide SG web application (the
+    "Service"), accessible at <strong>myridesg.com</strong>. This Privacy Policy
+    explains how we collect, use, disclose, and safeguard your information when you
+    use our Service. By using the Service, you agree to the collection and use of
+    information in accordance with this policy.
+  </p>
+
+  <h2>2. Information We Collect</h2>
+  <p>
+    <strong>Account Information:</strong> When you sign in with Google, we receive your
+    name, email address, and profile picture from Google. We do not receive your Google
+    password.
+  </p>
+  <p>
+    <strong>User-Generated Data:</strong> Information you voluntarily enter into the
+    Service, including motorcycle details (make, model, plate number), maintenance logs,
+    fuel fill-up records, mileage readings, expense records, and document expiry dates
+    (COE, insurance, road tax).
+  </p>
+  <p>
+    <strong>Usage Data:</strong> We may collect information about how the Service is
+    accessed and used, including your device type, browser type, pages viewed, and time
+    spent on pages.
+  </p>
+
+  <h2>3. How We Use Your Information</h2>
+  <ul>
+    <li>To provide, operate, and maintain the Service</li>
+    <li>To authenticate your identity and manage your account</li>
+    <li>To store and display your motorcycle and maintenance data</li>
+    <li>To send service reminders and expiry alerts you have opted into</li>
+    <li>To calculate and display fuel efficiency, cost per km, and spending analytics</li>
+    <li>To operate the XP rewards and gamification system</li>
+    <li>To improve and personalise the Service</li>
+    <li>To communicate important updates about the Service</li>
+  </ul>
+
+  <h2>4. Usage Analytics</h2>
+  <p>
+    We record how riders move through the app — which screens are opened, which features
+    are used, and where a form is abandoned — so we can find what is confusing or broken
+    and fix it. We rely on the Business Improvement exception under Singapore's Personal
+    Data Protection Act for this.
+  </p>
+  <p>
+    These records never contain your name, email address, phone number, vehicle plate
+    number, NRIC, location, or anything you typed into the app. They are stored in our
+    own database and are never sold or shared with advertisers or other companies.
+  </p>
+  <p>
+    We keep this data for 180 days, after which it is deleted automatically. You can turn
+    it off at any time under Account → Share usage data, and deleting your account
+    removes the link between these records and you.
+  </p>
+
+  <h2>5. Google Sign-In</h2>
+  <p>
+    We use Google OAuth 2.0 to authenticate users. When you sign in with Google, we
+    access only your basic profile information (name and email address) as permitted by
+    the scopes you authorise. We do not access your Gmail, Google Drive, Google Contacts,
+    or any other Google service data. Your use of Google Sign-In is also governed by <a
+      href="https://policies.google.com/privacy"
+      target="_blank"
+      rel="noopener noreferrer">Google's Privacy Policy</a
+    >.
+  </p>
+
+  <h2>6. Data Sharing and Disclosure</h2>
+  <p>
+    We do not sell, trade, or rent your personal information to third parties. We may
+    share data in the following limited circumstances:
+  </p>
+  <ul>
+    <li>
+      <strong>Service Providers:</strong> Third-party vendors who assist us in operating
+      the Service (e.g., cloud hosting, analytics) under confidentiality agreements.
+    </li>
+    <li>
+      <strong>Legal Requirements:</strong> If required by law, regulation, or valid legal
+      process.
+    </li>
+    <li>
+      <strong>Business Transfer:</strong> In the event of a merger, acquisition, or sale
+      of assets, user data may be transferred with appropriate notice.
+    </li>
+  </ul>
+
+  <h2>7. Data Retention</h2>
+  <p>
+    We retain your personal data for as long as your account is active. You can delete
+    your account and associated data at any time, in-app, at <strong
+      >Account → Delete account</strong
+    > — no need to contact support. Deletion is immediate and cannot be undone; some records
+    may be retained where required by Singapore law. You may also request deletion by contacting
+    us at <strong>hello@myridesg.com</strong> if you prefer.
+  </p>
+
+  <h2>8. Data Security</h2>
+  <p>
+    We implement industry-standard security measures to protect your data, including
+    encrypted connections (HTTPS/TLS), access controls, and secure cloud infrastructure.
+    However, no method of transmission over the internet is 100% secure, and we cannot
+    guarantee absolute security.
+  </p>
+
+  <h2>9. Your Rights</h2>
+  <p>You have the right to:</p>
+  <ul>
+    <li>Access the personal data we hold about you</li>
+    <li>Request correction of inaccurate data</li>
+    <li>Request deletion of your data</li>
+    <li>
+      Withdraw consent at any time by disconnecting Google Sign-In and deleting your
+      account
+    </li>
+    <li>
+      Lodge a complaint with the Personal Data Protection Commission (PDPC) of Singapore
+    </li>
+  </ul>
+  <p>
+    To exercise any of these rights, contact us at <strong>hello@myridesg.com</strong>.
+  </p>
+
+  <h2>10. Cookies and Local Storage</h2>
+  <p>
+    We use browser local storage and session cookies to maintain your login session and
+    application preferences (e.g., theme, settings). We do not use third-party
+    advertising cookies. You may clear cookies and local storage through your browser
+    settings, which will log you out of the Service.
+  </p>
+
+  <h2>11. Children's Privacy</h2>
+  <p>
+    The Service is not directed to individuals under the age of 16. We do not knowingly
+    collect personal data from children under 16. If you believe we have inadvertently
+    collected such data, please contact us immediately and we will delete it.
+  </p>
+
+  <h2>12. Changes to This Policy</h2>
+  <p>
+    We may update this Privacy Policy from time to time. We will notify you of
+    significant changes by updating the "Last updated" date at the top of this page.
+    Continued use of the Service after changes constitutes acceptance of the revised
+    policy.
+  </p>
+
+  <h2>13. Governing Law</h2>
+  <p>
+    This Privacy Policy is governed by the laws of Singapore, including the Personal Data
+    Protection Act 2012 (PDPA). Any disputes shall be subject to the exclusive
+    jurisdiction of the courts of Singapore.
+  </p>
+
+  <h2>14. Contact Us</h2>
+  <p>If you have any questions about this Privacy Policy, please contact us:</p>
+  <p>
+    <strong>MyRide SG</strong><br />
+    Email: <a href="mailto:hello@myridesg.com">hello@myridesg.com</a><br />
+    Website: <a href="https://myridesg.com">https://myridesg.com</a><br />
+    Singapore
+  </p>
+</ProseLayout>

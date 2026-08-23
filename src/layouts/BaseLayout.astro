@@ -1,0 +1,55 @@
+---
+import '@/styles/global.css'
+import { SITE } from '@/consts'
+
+interface Props {
+  /** Page title. Rendered as "<title> — MyRideSG"; omit on the home page. */
+  title?: string
+  description?: string
+  /** Absolute or root-relative path to the social image. */
+  ogImage?: string
+  /** Set true only on pages that must stay out of the index. */
+  noindex?: boolean
+}
+
+const { title, description = SITE.description, ogImage, noindex = false } = Astro.props
+
+const pageTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`
+const canonical = new URL(Astro.url.pathname, Astro.site).href
+const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
+---
+
+<!doctype html>
+<html lang="en-SG">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#080808" />
+
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={SITE.locale} />
+    {socialImage && <meta property="og:image" content={socialImage} />}
+
+    <meta name="twitter:card" content={socialImage ? 'summary_large_image' : 'summary'} />
+    {socialImage && <meta name="twitter:image" content={socialImage} />}
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+
+  <body>
+    <slot />
+  </body>
+</html>

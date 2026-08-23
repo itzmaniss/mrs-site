@@ -1,0 +1,14 @@
+# pnpm 11 reads install-script policy from this file (not package.json), as a
+# package -> boolean map. Every package that ships an install script must get an
+# explicit decision here before pnpm will run any command.
+#
+# esbuild: DENIED.
+#   It arrives transitively via astro and vite — not a direct dependency
+#   (`pnpm why esbuild`). Its postinstall only links the platform binary, which
+#   @esbuild/darwin-arm64 already provides. Verified with the script skipped:
+#   the binary runs (0.28.2) and esbuild.transformSync() compiles TS correctly.
+#   Denying costs nothing and keeps the install free of executable hooks.
+#
+# Flip a package to true only with a reason recorded here.
+allowBuilds:
+  esbuild: false

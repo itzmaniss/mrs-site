@@ -1,0 +1,17 @@
+# Normalise line endings: LF in the repository, whatever the OS wants on disk.
+* text=auto eol=lf
+
+# Binary assets — never diff or merge these as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.mp4   binary
+*.webm  binary
+
+# Generated — collapse in diffs and exclude from language stats.
+pnpm-lock.yaml linguist-generated=true -diff

@@ -1,0 +1,46 @@
+---
+// Replaces the old "PROOF" section, which carried invented adoption counts
+// (4,800 riders / 6,200 bikes / 87 workshops) and two invented testimonials.
+// Both are forbidden by the Claim Guardrails in
+// myridesg-v2/docs/marketing-site-creative-brief.md. This section proves local
+// relevance through what the product actually does instead.
+const FACTS = [
+  {
+    title: 'The dates that matter here',
+    body: 'COE, road tax and insurance renewals, counted down from the day they are due — not buried in an email thread.',
+  },
+  {
+    title: 'SGD and kilometres, natively',
+    body: 'Every cost is recorded in the currency you pay in and the distance you actually ride. No conversion, no guessing.',
+  },
+  {
+    title: 'Singapore workshops',
+    body: 'Browse workshops by region and speciality, with the services and contact details you need to make the call.',
+  },
+  {
+    title: 'Fuel that reflects the pump',
+    body: 'Log fill-ups against listed pump prices and the fuel cards you carry, so cost per kilometre means something.',
+  },
+]
+---
+
+<section class="bg-paper py-20 md:py-28">
+  <div class="shell">
+    <p class="eyebrow text-red">Built for Singapore ownership</p>
+
+    <h2 class="mt-4 max-w-2xl text-display-sm md:text-display">
+      Everything a bike costs you here, in one place.
+    </h2>
+
+    <div class="mt-12 grid gap-px overflow-hidden rounded-xl bg-ink/10 sm:grid-cols-2">
+      {
+        FACTS.map((fact) => (
+          <div class="bg-paper p-6 md:p-8">
+            <h3 class="text-2xl">{fact.title}</h3>
+            <p class="mt-2.5 text-md leading-relaxed text-muted">{fact.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

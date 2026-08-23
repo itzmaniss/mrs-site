@@ -1,0 +1,69 @@
+---
+import { STORE } from '@/consts'
+
+interface Props {
+  /** 'dark' sits on a light surface; 'light' sits on a dark surface. */
+  tone?: 'dark' | 'light'
+  class?: string
+}
+
+const { tone = 'dark', class: className = '' } = Astro.props
+
+// Both store links are always rendered so they are crawlable and work with
+// JavaScript disabled. Platform routing happens on CLICK (see the inline script
+// below), never as a page-load redirect — a load-time redirect would break
+// crawlers, link-preview bots and desktop visitors.
+const primary =
+  tone === 'light'
+    ? 'bg-paper text-ink hover:opacity-85'
+    : 'bg-ember text-paper hover:opacity-85'
+
+const secondary =
+  tone === 'light'
+    ? 'border-2 border-white/45 text-paper hover:border-white/80'
+    : 'border-2 border-ink/20 text-ink hover:border-ink/45'
+---
+
+<div class:list={['flex flex-wrap items-center gap-3', className]} data-store-cta>
+  <a
+    href={STORE.ios}
+    class:list={[
+      'inline-flex min-h-12 items-center rounded-pill px-7 text-md font-semibold transition-opacity',
+      primary,
+    ]}
+    data-store="ios"
+  >
+    Download on iOS
+  </a>
+
+  <a
+    href={STORE.android}
+    class:list={[
+      'inline-flex min-h-12 items-center rounded-pill px-7 text-md font-semibold transition-colors',
+      secondary,
+    ]}
+    data-store="android"
+  >
+    Get it on Android
+  </a>
+</div>
+
+<script>
+  // Progressive enhancement: on a phone, collapse the two buttons into the one
+  // that matters. Desktop keeps both. If this script never runs, both links
+  // remain — which is the correct fallback.
+  const ua = navigator.userAgent
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && 'ontouchend' in document)
+  const isAndroid = /Android/.test(ua)
+
+  if (isIOS || isAndroid) {
+    const keep = isIOS ? 'ios' : 'android'
+    document.querySelectorAll<HTMLElement>('[data-store-cta]').forEach((group) => {
+      group.querySelectorAll<HTMLAnchorElement>('[data-store]').forEach((link) => {
+        if (link.dataset.store !== keep) link.remove()
+      })
+      const remaining = group.querySelector<HTMLAnchorElement>('[data-store]')
+      if (remaining) remaining.textContent = 'Get MyRideSG'
+    })
+  }
+</script>

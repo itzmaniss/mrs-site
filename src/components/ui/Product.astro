@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets'
+import PhoneFrame from './PhoneFrame.astro'
+import screenBike from '@/assets/app/screen-bike.webp'
+import screenFuel from '@/assets/app/screen-fuel.webp'
+import screenWorkshops from '@/assets/app/screen-workshops.webp'
+
+// Real app captures, carried over from the v2 marketing site rather than
+// hand-drawn mockups. Showing the actual product is both more honest and more
+// persuasive, and it means these panels never drift from what ships.
+const ROWS = [
+  {
+    title: 'Ownership at a glance',
+    body: 'Road tax, COE and insurance countdowns on one screen. No digging through emails, no missing a deadline.',
+    screen: screenBike,
+    alt: 'MyRideSG bike overview showing road tax due in 21 days alongside the other key ownership dates',
+    frame: 'bg-rose',
+  },
+  {
+    title: 'Every dollar you spend riding',
+    body: 'Log fill-ups in seconds. Track cost per kilometre, monthly spend and efficiency over time, so you know what the bike really costs.',
+    screen: screenFuel,
+    alt: 'MyRideSG fuel screen showing the cheapest RON95 today and fuel economy in km per litre',
+    frame: 'bg-soft',
+  },
+  {
+    title: 'Find a workshop in two taps',
+    body: 'Browse workshops near you, see the services they offer and get in touch — without leaving the app.',
+    screen: screenWorkshops,
+    alt: 'MyRideSG workshops directory with call, WhatsApp and directions actions',
+    frame: 'bg-rose',
+  },
+]
+---
+
+<section id="features" class="bg-paper pb-20 md:pb-28">
+  <div class="shell">
+    <p class="eyebrow text-red">The app</p>
+
+    <h2 class="mt-4 max-w-xl text-display-sm md:text-display">
+      Start every ride with confidence.
+    </h2>
+
+    <div class="mt-14 flex flex-col gap-16 md:gap-24">
+      {
+        ROWS.map((row, i) => (
+          <div class="grid items-center gap-8 md:grid-cols-2 md:gap-16">
+            <div class:list={[i % 2 === 1 && 'md:order-2']}>
+              <h3 class="text-display-sm md:text-[2.5rem]">{row.title}</h3>
+              <p class="mt-4 max-w-md text-lg leading-relaxed text-muted">{row.body}</p>
+            </div>
+
+            <div
+              class:list={[
+                'flex justify-center rounded-3xl px-6 pb-0 pt-12 md:px-12 md:pt-16',
+                row.frame,
+                i % 2 === 1 && 'md:order-1',
+              ]}
+            >
+              {/* chrome={false} — the capture already contains the status bar.
+                  The frame is allowed to bleed past the panel, as it does on
+                  the v2 marketing page, so the row is not as tall as the phone. */}
+              <PhoneFrame variant="light" width={290} chrome={false} class="-mb-14 md:-mb-20">
+                <Image
+                  src={row.screen}
+                  alt={row.alt}
+                  widths={[290, 549]}
+                  sizes="290px"
+                  class="size-full object-cover object-top"
+                  loading="lazy"
+                />
+              </PhoneFrame>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

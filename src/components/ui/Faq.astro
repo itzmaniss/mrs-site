@@ -1,0 +1,65 @@
+---
+// Native <details> — the accordion costs zero JavaScript. Styling lives in the
+// `faq-item` utility in global.css.
+//
+// The "do I need to download anything" answer was rewritten: the original draft
+// said the product runs in the browser with no download, which is no longer
+// true now that MyRideSG is a native app.
+const ITEMS = [
+  {
+    q: 'Is MyRideSG free?',
+    a: 'Yes. Tracking, reminders and the workshop directory are free to use, with no trial period and no card required.',
+  },
+  {
+    q: 'Which phones does it run on?',
+    a: 'MyRideSG is available on iOS and Android. Download it from the App Store or Google Play and add your bike in about two minutes.',
+  },
+  {
+    q: 'Can I import from a spreadsheet?',
+    a: 'CSV import is on the roadmap. For now you can add entries manually, which takes roughly two minutes per fill-up.',
+  },
+  {
+    q: 'What happens to my records when I sell my bike?',
+    a: 'Your records belong to you. Export everything as a spreadsheet before you sell, and hand the service history to the new owner.',
+  },
+  {
+    q: 'Do workshops see my data?',
+    a: 'No. Workshops never see your personal ownership records unless you actively choose to share them.',
+  },
+]
+
+// FAQPage structured data. Worth emitting properly: it earns rich results in
+// search and is one of the cleanest formats for AI crawlers to extract.
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+}
+---
+
+<section id="faq" class="bg-paper py-20 md:py-28">
+  <div class="shell">
+    <div class="mx-auto max-w-2xl">
+      <p class="eyebrow text-red">FAQ</p>
+
+      <h2 class="mt-4 text-display-sm md:text-display">Common questions.</h2>
+
+      <div class="mt-10 border-t border-ink/12">
+        {
+          ITEMS.map((item, i) => (
+            <details class="faq-item" open={i === 0}>
+              <summary>{item.q}</summary>
+              <p class="max-w-xl pb-5 text-md leading-relaxed text-muted">{item.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} is:inline />
