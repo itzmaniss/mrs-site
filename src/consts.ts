@@ -31,5 +31,6 @@ export const STORE = {
 //   { label: 'Demo',    href: '/demo' }     — lives on feat/demo
 export const NAV = [
   { label: 'Features', href: '/#features' },
+  { label: 'FAQ', href: '/#faq' },
   { label: 'Guides', href: '/guides' },
 ] as const

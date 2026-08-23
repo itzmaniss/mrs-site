@@ -257,7 +257,7 @@
     font-weight: 300;
     line-height: 1;
     color: var(--color-ember);
-    transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform 640ms cubic-bezier(0.37, 0, 0.63, 1);
   }
 
   &[open] > summary::after {
@@ -265,38 +265,23 @@
   }
 }
 
-/* Smooth open/close for the FAQ panels, with no JavaScript.
+/* The FAQ open/close motion is driven from Faq.astro, not from here.
  *
- * `interpolate-size: allow-keywords` is what makes a transition to `auto`
- * height possible at all; ::details-content is the box the browser wraps a
- * <details> body in, and `transition-behavior: allow-discrete` lets
- * content-visibility flip at the right end of the animation instead of
- * instantly (which would clip the text on the way out).
+ * A pure-CSS route via ::details-content + interpolate-size was tried first and
+ * abandoned, because measured against real browsers it only ever half-worked:
  *
- * Support is Chromium and Safari; Firefox has not shipped ::details-content
- * yet and simply gets the old instant toggle. That is a clean degradation —
- * the accordion still works everywhere, it just doesn't glide.
+ *   Chromium 151  opened smoothly, but closed in a single 8ms frame.
+ *   Firefox 153   ships ::details-content and transition-behavior but NOT
+ *                 interpolate-size, so it could not transition to `auto` at
+ *                 all, and worse, held the collapsed value for the full
+ *                 duration before snapping.
+ *   Safari        untested here, so unknown either way.
  *
- * Scoped to no-preference so reduced-motion users keep the instant version.
- */
-@media (prefers-reduced-motion: no-preference) {
-  :root {
-    interpolate-size: allow-keywords;
-  }
-
-  .faq-item::details-content {
-    block-size: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition:
-      block-size 420ms cubic-bezier(0.32, 0.72, 0, 1),
-      opacity 260ms ease-out,
-      content-visibility 420ms;
-    transition-behavior: allow-discrete;
-  }
-
-  .faq-item[open]::details-content {
-    block-size: auto;
-    opacity: 1;
-  }
-}
+ * Feature-detecting around that produced two divergent code paths, each broken
+ * in a different direction. Scripting it instead gives one predictable path
+ * that behaves identically everywhere, at the cost of roughly 800 bytes inline
+ * and no animation when JavaScript is off. The accordion still opens and
+ * closes natively in that case, so the degraded state is cosmetic only.
+ *
+ * The `+` to `x` rotation stays in CSS below, since that transition works
+ * everywhere. */

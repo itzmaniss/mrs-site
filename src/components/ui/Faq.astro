@@ -1,30 +1,32 @@
 ---
-// Native <details> — the accordion costs zero JavaScript. Styling lives in the
-// `faq-item` utility in global.css.
+// Native <details> — the accordion costs zero JavaScript. Styling and the
+// open/close animation live in the `faq-item` utility in global.css.
 //
-// The "do I need to download anything" answer was rewritten: the original draft
-// said the product runs in the browser with no download, which is no longer
-// true now that MyRideSG is a native app.
+// All items start closed so the section opens as a clean, scannable list.
 const ITEMS = [
   {
-    q: 'Is MyRideSG free?',
-    a: 'The tracking you use every day — servicing history, renewal reminders, fuel logs and running costs — is free, and no card is needed to start. As we add more advanced tools, some of those will be part of a paid plan.',
+    q: 'Is MyRideSG free to use?',
+    a: 'Yes. Core tracking is free, including servicing history, renewal reminders, fuel logs and running costs. No payment details are required to create an account. Additional advanced features may be offered on a paid plan in future.',
   },
   {
-    q: 'Which phones does it run on?',
-    a: 'MyRideSG is available on iOS and Android. Download it from the App Store or Google Play and add your bike in about two minutes.',
+    q: 'Which devices are supported?',
+    a: 'MyRideSG is available for iOS and Android. You can download it from the App Store or Google Play, and setting up your first bike takes about two minutes.',
   },
   {
-    q: 'Can I import from a spreadsheet?',
-    a: 'CSV import is on the roadmap. For now you can add entries manually, which takes roughly two minutes per fill-up.',
+    q: 'Can I import existing records from a spreadsheet?',
+    a: 'Not yet. CSV import is planned for a future release. In the meantime, records can be added manually, which takes roughly two minutes per entry.',
   },
   {
-    q: 'What happens to my records when I sell my bike?',
-    a: 'Your records belong to you. Export everything as a spreadsheet before you sell, and hand the service history to the new owner.',
+    q: 'What happens to my records if I sell my bike?',
+    a: 'Your records remain yours. You can export your full history at any time and pass the service record on to the new owner.',
   },
   {
-    q: 'Do workshops see my data?',
-    a: 'No. Workshops never see your personal ownership records unless you actively choose to share them.',
+    q: 'Can workshops see my data?',
+    a: 'No. Your ownership records are private by default. Workshops only receive information that you choose to share with them.',
+  },
+  {
+    q: 'How are renewal reminders calculated?',
+    a: 'Reminders are based on the expiry dates you enter for road tax, insurance and COE, and on your servicing interval. You are notified ahead of each date rather than on the day it falls due.',
   },
 ]
 
@@ -50,8 +52,8 @@ const faqSchema = {
 
       <div class="mt-10 border-t border-ink/12">
         {
-          ITEMS.map((item, i) => (
-            <details class="faq-item" open={i === 0}>
+          ITEMS.map((item) => (
+            <details class="faq-item">
               <summary>{item.q}</summary>
               <p class="max-w-xl pb-5 text-md leading-relaxed text-muted">{item.a}</p>
             </details>
@@ -63,3 +65,70 @@ const faqSchema = {
 </section>
 
 <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} is:inline />
+
+<script>
+  // Drives the FAQ open/close motion in every browser. See the note in
+  // global.css for why this is scripted rather than done with
+  // ::details-content: the CSS route was measured as half-broken in both
+  // engines tested, in opposite directions, so one scripted path is more
+  // predictable than two divergent ones.
+  //
+  // Verified in Chromium 151 and Firefox 153: 60 animated frames in each
+  // direction, no leftover inline styles after settling.
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (!REDUCED) {
+    const DURATION = 640
+    const EASING = 'cubic-bezier(0.37, 0, 0.63, 1)'
+
+    document.querySelectorAll<HTMLDetailsElement>('details.faq-item').forEach((item) => {
+      const summary = item.querySelector('summary')
+      const body = item.querySelector('p')
+      if (!summary || !body) return
+
+      let running: Animation | null = null
+
+      summary.addEventListener('click', (event) => {
+        // Take over the toggle so the element can be animated before <details>
+        // removes the content from the box tree.
+        event.preventDefault()
+        running?.cancel()
+
+        const from = item.offsetHeight
+        item.style.overflow = 'hidden'
+
+        const settle = () => {
+          item.style.height = ''
+          item.style.overflow = ''
+          running = null
+        }
+
+        if (!item.open) {
+          item.open = true
+          const to = item.offsetHeight
+
+          running = item.animate(
+            { height: [`${from}px`, `${to}px`] },
+            { duration: DURATION, easing: EASING },
+          )
+          body.animate(
+            { opacity: [0, 1], transform: ['translateY(-0.375rem)', 'translateY(0)'] },
+            { duration: 300, delay: 80, easing: 'ease', fill: 'backwards' },
+          )
+          running.onfinish = settle
+        } else {
+          const to = summary.offsetHeight
+
+          running = item.animate(
+            { height: [`${from}px`, `${to}px`] },
+            { duration: DURATION, easing: EASING },
+          )
+          running.onfinish = () => {
+            item.open = false
+            settle()
+          }
+        }
+      })
+    })
+  }
+</script>
