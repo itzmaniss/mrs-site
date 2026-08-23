@@ -16,11 +16,11 @@ const { tone = 'dark', class: className = '' } = Astro.props
 const primary =
   tone === 'light'
     ? 'bg-paper text-ink hover:opacity-85'
-    : 'bg-ember text-paper hover:opacity-85'
+    : 'bg-ember text-on-dark hover:opacity-85'
 
 const secondary =
   tone === 'light'
-    ? 'border-2 border-white/45 text-paper hover:border-white/80'
+    ? 'border-2 border-white/45 text-on-dark hover:border-white/80'
     : 'border-2 border-ink/20 text-ink hover:border-ink/45'
 ---
 

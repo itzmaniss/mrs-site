@@ -42,6 +42,13 @@
      Named for the constraint so it doesn't get used on light surfaces. */
   --color-ember-on-dark: #f57c67;
 
+  /* Text sitting on a PERMANENTLY dark or brand-coloured surface — the black
+     feature bands, the red ticker, an ember button. Identical in both themes,
+     and deliberately not --color-paper: paper is the page ground, so it flips
+     to near-black in dark mode and would render this text invisible on black.
+     Use --color-paper only where the surface flips with it. */
+  --color-on-dark: #ffffff;
+
   /* ── Type scale ──────────────────────────────────────────────────────────
      Derived from the sizes actually used in page.module.css. Display sizes
      are for Barlow Condensed; the rest are Barlow. */
@@ -78,6 +85,44 @@
   --radius-2xl: 2.75rem; /* 44px */
   --radius-3xl: 3.25rem; /* 52px */
   --radius-pill: 999px;
+}
+
+/* ============================================================================
+ * Dark mode
+ *
+ * Follows the system preference only — there is no toggle. This is a brochure
+ * site, and a theme switcher is app furniture that would need persisting.
+ *
+ * Every value comes from the ember dark ramp and dark ColorTokens in
+ * packages/tokens (the same set apps/mobile uses), so the two products stay
+ * visually related. Nothing here is invented.
+ *
+ * Overriding the tokens is enough on its own: Tailwind emits colours as
+ * var(--color-*), and even alpha utilities compile to
+ * color-mix(in oklab, var(--color-ink) 10%, transparent), so borders and
+ * translucent text follow automatically.
+ *
+ * Note what happens to the rhythm. In light mode the page is white with black
+ * feature bands. In dark mode `paper` lifts to ember-1 while `black` stays at
+ * #080808, so those bands read as deeper than the page rather than lighter —
+ * the alternating structure survives instead of flattening into one dark sheet.
+ * ==========================================================================*/
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #171110; /* ember-1  · page ground */
+    --color-soft: #201513; /* ember-2  · alternating band */
+    --color-rose: #341b17; /* ember-3  · tinted panel */
+    --color-charcoal: #2c2321; /* card     · raised surface */
+    --color-black: #080808; /* unchanged — still the deepest band */
+
+    --color-ink: #fafafa; /* foreground */
+    --color-muted: #a7a1a0; /* muted foreground */
+
+    --color-red: #d33722; /* ember-9  · brand, readable on dark */
+    --color-ember: #e55540; /* ember-10 · interaction */
+    --color-ember-on-dark: #f57c67; /* ember-11 · identical in both modes */
+  }
 }
 
 /* ============================================================================
@@ -203,7 +248,8 @@
     display: none;
   }
 
-  /* Plus sign that rotates into a cross when open. */
+  /* Plus sign that rotates into a cross when open. Shares the panel's timing
+     so the two motions read as one gesture. */
   & > summary::after {
     content: '+';
     flex-shrink: 0;
@@ -211,10 +257,46 @@
     font-weight: 300;
     line-height: 1;
     color: var(--color-ember);
-    transition: transform 0.2s ease;
+    transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   &[open] > summary::after {
     transform: rotate(45deg);
+  }
+}
+
+/* Smooth open/close for the FAQ panels, with no JavaScript.
+ *
+ * `interpolate-size: allow-keywords` is what makes a transition to `auto`
+ * height possible at all; ::details-content is the box the browser wraps a
+ * <details> body in, and `transition-behavior: allow-discrete` lets
+ * content-visibility flip at the right end of the animation instead of
+ * instantly (which would clip the text on the way out).
+ *
+ * Support is Chromium and Safari; Firefox has not shipped ::details-content
+ * yet and simply gets the old instant toggle. That is a clean degradation —
+ * the accordion still works everywhere, it just doesn't glide.
+ *
+ * Scoped to no-preference so reduced-motion users keep the instant version.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+
+  .faq-item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size 420ms cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 260ms ease-out,
+      content-visibility 420ms;
+    transition-behavior: allow-discrete;
+  }
+
+  .faq-item[open]::details-content {
+    block-size: auto;
+    opacity: 1;
   }
 }

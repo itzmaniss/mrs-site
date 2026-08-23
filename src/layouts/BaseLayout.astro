@@ -31,7 +31,11 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
 
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#080808" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171110" />
+    <!-- Tells the UA to render form controls, scrollbars and the like in the
+         scheme the page actually uses, rather than assuming light. -->
+    <meta name="color-scheme" content="light dark" />
 
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
