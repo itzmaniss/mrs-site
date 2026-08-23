@@ -1,3 +1,7 @@
 [tools]
 node = "22"
-"npm:pnpm" = "10.34.3"
+# Must stay in step with "packageManager" in package.json and with the Docker
+# build, which activates that same version through corepack. pnpm 11 is not
+# optional here: pnpm-workspace.yaml uses `allowBuilds`, which pnpm 10 does not
+# understand.
+"npm:pnpm" = "11.20.0"

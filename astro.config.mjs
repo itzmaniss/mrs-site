@@ -24,6 +24,32 @@ export default defineConfig({
   // placed in public/ is copied byte-for-byte with NO optimisation, which on a
   // 2.7 MB hero is a silent performance regression.
 
+  // Local dev and `astro preview` only. There is no server in production, so
+  // nothing here ships — it exists so the site can be shared for review.
+  //
+  // allowedHosts is the part that matters. Vite rejects any request whose Host
+  // header it does not recognise (DNS-rebinding protection), and a Cloudflare
+  // quick tunnel arrives as a randomly generated *.trycloudflare.com hostname.
+  // Without this, the tunnel URL returns a bare "Blocked request" page instead
+  // of the site, which looks like the tunnel is broken when it is not.
+  //
+  // A leading dot matches the domain and all its subdomains.
+  server: {
+    // Bind 0.0.0.0 so a phone on the same network, or a container, can reach
+    // the dev server. cloudflared itself only needs localhost.
+    host: true,
+    port: 4321,
+    allowedHosts: [
+      '.trycloudflare.com', // quick tunnels: pnpm tunnel
+      '.cfargotunnel.com', // named tunnels, default hostname
+      // Named tunnel on a real domain, or any other host, without editing this
+      // file: DEV_ALLOWED_HOSTS=preview.myridesg.com pnpm dev
+      ...(process.env.DEV_ALLOWED_HOSTS?.split(',')
+        .map((host) => host.trim())
+        .filter(Boolean) ?? []),
+    ],
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },
