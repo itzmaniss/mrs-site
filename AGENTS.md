@@ -11,7 +11,7 @@ SEO content. There is no web app here, no auth, and no user accounts.
 | | |
 |---|---|
 | Framework | Astro 7 — static output, MPA |
-| Interactivity | React 19 islands, only where genuinely needed |
+| Interactivity | None installed — see rule 2 before reaching for React |
 | Styling | Tailwind CSS v4 via `@tailwindcss/vite` |
 | Content | Sanity (guides) + local TS data (bike catalog) |
 | Images | `astro:assets` → WebP |
@@ -51,10 +51,24 @@ src/
 runtime, so no route may fetch on request. Data is fetched at build time in
 frontmatter or a prebuild script.
 
-**2. `.astro` by default; islands are the exception.** Reach for a React island
-only when there is real client interactivity. Accordions use `<details>`; menus
-use `<details>`; neither needs JS. When an island is genuinely required, use
-`client:visible` unless it must run sooner.
+**2. `.astro` only — React is not installed.** Nothing on the site has ever
+needed an island: accordions and menus use `<details>`, the theme toggle is a
+dozen lines of inline script, and the phone mockups on the home page are
+rendered markup. `@astrojs/react` was emitting a ~190 KB client runtime into
+`dist/_astro/` that no page referenced, so it came out.
+
+Put it back only for something that genuinely cannot be done without client
+state, and put it back deliberately:
+
+```bash
+pnpm add @astrojs/react react react-dom
+pnpm add -D @types/react @types/react-dom
+```
+
+then re-add `react()` to `astro.config.mjs` and `jsx`/`jsxImportSource` to
+`tsconfig.json`. Use `client:visible` unless it must run sooner. Note that the
+`feat/demo` branch still has an island (`DemoGarage.tsx`) and needs all of the
+above restored before it will build against `main`.
 
 **3. Images go in `src/assets/`, never `public/`.** Only `src/assets/` is
 processed by `astro:assets`. Files in `public/` are copied byte-for-byte — a

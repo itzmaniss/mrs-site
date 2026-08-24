@@ -1,6 +1,5 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
-import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -14,7 +13,18 @@ export default defineConfig({
   // at runtime, so no route may fetch on request. See AGENTS.md.
   output: 'static',
 
-  integrations: [react(), sitemap()],
+  // No React. Nothing on the site is an island — the accordions and the menu
+  // are <details>, the theme toggle and the phone screens are .astro — and the
+  // integration emitted a ~190 KB client runtime into dist/_astro/ that no page
+  // ever referenced. Add it back the day something genuinely needs it:
+  //
+  //   pnpm add @astrojs/react react react-dom
+  //   pnpm add -D @types/react @types/react-dom
+  //
+  // then re-add react() here and the jsx options to tsconfig.json. Note that
+  // the feat/demo branch DOES have an island (DemoGarage.tsx), so it needs all
+  // of the above restored before it can build against this config.
+  integrations: [sitemap()],
 
   // Images: WebP is the delivery standard for this site. <Image> already emits
   // WebP by default, so there is no format config here — set `format` on the
