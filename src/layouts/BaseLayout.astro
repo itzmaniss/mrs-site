@@ -10,12 +10,25 @@ interface Props {
   ogImage?: string
   /** Set true only on pages that must stay out of the index. */
   noindex?: boolean
+  /**
+   * Overrides the self-referencing canonical. Only for content that is
+   * authored elsewhere and republished here — CMS-supplied canonicalUrl.
+   */
+  canonical?: string
 }
 
-const { title, description = SITE.description, ogImage, noindex = false } = Astro.props
+const {
+  title,
+  description = SITE.description,
+  ogImage,
+  noindex = false,
+  canonical: canonicalOverride,
+} = Astro.props
 
 const pageTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`
-const canonical = new URL(Astro.url.pathname, Astro.site).href
+const canonical = canonicalOverride
+  ? new URL(canonicalOverride, Astro.site).href
+  : new URL(Astro.url.pathname, Astro.site).href
 const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
 ---
 

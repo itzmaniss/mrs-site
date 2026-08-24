@@ -1,0 +1,60 @@
+---
+import { PortableText } from 'astro-portabletext'
+import type { GetStaticPaths } from 'astro'
+import type { PortableTextProps } from 'astro-portabletext/types'
+import ProseLayout from '@/layouts/ProseLayout.astro'
+import { listGuideArticles, getGuideArticle } from '@/content/usecases'
+import { contentRepo } from '@/lib/content'
+import type { Article } from '@/content/entities'
+
+// One page per published guide, resolved at build time. With Sanity
+// unconfigured this returns [], so the route simply produces nothing and the
+// build still succeeds — see src/lib/content.ts.
+export const getStaticPaths = (async () => {
+  const guides = await listGuideArticles(contentRepo)
+
+  const articles = await Promise.all(
+    guides.map((guide) => getGuideArticle(contentRepo, guide.slug)),
+  )
+
+  return articles
+    .filter((article): article is Article => article !== null)
+    .map((article) => ({ params: { slug: article.slug }, props: { article } }))
+}) satisfies GetStaticPaths
+
+// Props are inferred from getStaticPaths above; a local `Props` interface would
+// be ignored by Astro's generated types for a dynamic route.
+const { article } = Astro.props
+
+// Portable Text arrives as JSON in bodySource, tagged by bodyFormat, because
+// the domain entity is renderer-agnostic. mdx-v1 is the other format in the
+// monorepo and nothing here can render it, so treat it as an empty body rather
+// than handing PortableText something it will throw on.
+const blocks =
+  article.bodyFormat === 'portable-text-v1'
+    ? (JSON.parse(article.bodySource) as PortableTextProps['value'])
+    : []
+
+const updated = new Intl.DateTimeFormat('en-SG', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(article.updatedAt)
+---
+
+<ProseLayout
+  title={article.title}
+  seoTitle={article.seo.metaTitle ?? undefined}
+  description={article.seo.metaDescription ?? article.description}
+  meta={`Updated ${updated}`}
+  noindex={article.seo.noIndex}
+  canonical={article.seo.canonicalUrl ?? undefined}
+>
+  <p class="text-lg leading-relaxed text-muted">{article.description}</p>
+
+  <PortableText value={blocks} />
+
+  <p class="mt-14 text-sm">
+    <a href="/guides" class="text-red underline underline-offset-2">All guides</a>
+  </p>
+</ProseLayout>

@@ -1,0 +1,71 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import SiteNav from '@/components/ui/SiteNav.astro'
+import SiteFooter from '@/components/ui/SiteFooter.astro'
+import { listGuideArticles } from '@/content/usecases'
+import { contentRepo } from '@/lib/content'
+
+// Build-time fetch. Every route on this site prerenders (AGENTS.md rule 1),
+// so new guides appear on the next build, not on the next request.
+const guides = await listGuideArticles(contentRepo)
+
+const dateFormat = new Intl.DateTimeFormat('en-SG', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+---
+
+<BaseLayout
+  title="Riding guides"
+  description="Maintenance, COE, road tax and insurance guides, written for Singapore motorcycle riders."
+>
+  <SiteNav />
+
+  <main class="bg-paper pb-24 pt-32 md:pt-40">
+    <div class="shell">
+      <div class="mx-auto max-w-[46rem]">
+        <p class="eyebrow text-red">Guides</p>
+
+        <h1 class="mt-4 text-display-sm md:text-display">Riding guides</h1>
+
+        <p class="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+          Maintenance, COE, road tax and insurance, written for Singapore riders.
+        </p>
+
+        {
+          guides.length === 0 ? (
+            <p class="mt-14 rounded-xl bg-soft px-6 py-8 text-lg leading-relaxed text-muted">
+              There are no guides published yet. They will appear here as they go
+              live.
+            </p>
+          ) : (
+            <ul class="mt-14 flex flex-col">
+              {guides.map((guide) => (
+                <li class="border-t border-ink/12 last:border-b">
+                  <a
+                    href={`/guides/${guide.slug}`}
+                    class="group flex flex-col gap-2 py-7 transition-opacity hover:opacity-70"
+                  >
+                    <time
+                      class="eyebrow text-muted"
+                      datetime={guide.publishedAt.toISOString()}
+                    >
+                      {dateFormat.format(guide.publishedAt)}
+                    </time>
+
+                    <h2 class="text-2xl md:text-[1.75rem]">{guide.title}</h2>
+
+                    <p class="max-w-xl leading-relaxed text-muted">{guide.description}</p>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </div>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>

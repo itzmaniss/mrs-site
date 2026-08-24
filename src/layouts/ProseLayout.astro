@@ -8,12 +8,24 @@ interface Props {
   description?: string
   /** Rendered under the h1, e.g. "Last updated: 6 August 2026". */
   meta?: string
+  /**
+   * Document <title> when it must differ from the h1 — a CMS metaTitle written
+   * for search results rather than for the top of the page. Defaults to title.
+   */
+  seoTitle?: string
+  noindex?: boolean
+  canonical?: string
 }
 
-const { title, description, meta } = Astro.props
+const { title, description, meta, seoTitle, noindex, canonical } = Astro.props
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={seoTitle ?? title}
+  description={description}
+  noindex={noindex}
+  canonical={canonical}
+>
   <SiteNav />
 
   <main class="bg-paper pb-24 pt-32 md:pt-40">

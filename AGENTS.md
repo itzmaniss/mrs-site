@@ -106,8 +106,12 @@ Related: never attach invented ratings or reviews to a **named real business**.
 
 ## Known gaps
 
-- `/guides` and `/catalog` are not built yet — blocked on Sanity credentials.
-  Both are absent from the nav on purpose; do not link them until they exist.
+- `/catalog` is not built yet. It is absent from the nav on purpose; do not
+  link it until it exists.
+- `/guides` is built and linked, but its content is empty until
+  `SANITY_PROJECT_ID` and `SANITY_DATASET` are set — see `.env.example`. The
+  build deliberately succeeds without them and renders an empty index, so a
+  fresh checkout and a preview deploy need no credentials.
 - The demo garage lives on the `feat/demo` branch, not `main`.
 - `src/pages/privacy.astro` and `terms.astro` are ported **verbatim** from v2
   and still describe a *web application*. They need legal review for the native
