@@ -1,0 +1,184 @@
+---
+/**
+ * ThemeToggle — flips the page between light and dark and remembers the choice.
+ *
+ * Three states exist, and only two of them are reachable from this button:
+ *
+ *   no preference stored   follow the OS (the default for a first visit)
+ *   'light' / 'dark'       the reader overrode it; persisted in localStorage
+ *
+ * Clicking always writes an explicit preference, so the OS is followed until
+ * the reader disagrees once, and respected again only if storage is cleared.
+ * The resolved theme is applied as `data-theme` on <html>; the token mapping
+ * lives in global.css.
+ *
+ * No JavaScript: BaseLayout's head script never sets `data-js`, so the CSS
+ * below keeps the button display:none and the page follows the OS via the
+ * media query. Nothing is broken, there is simply nothing to click.
+ *
+ * Both icons are always in the DOM, stacked, and cross-faded by `--is-dark`
+ * (declared alongside the palette in global.css). Keying off that one property
+ * means the icon cannot disagree with the colours it is describing.
+ */
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  data-theme-toggle
+  aria-label="Switch to dark mode"
+  aria-pressed="false"
+>
+  <span class="theme-toggle__icons" aria-hidden="true">
+    <svg
+      class="theme-toggle__sun"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+    >
+      <circle cx="12" cy="12" r="4.2"></circle>
+      <path d="M12 2.4v2.2M12 19.4v2.2M4.2 12H2M22 12h-2.2M6.5 6.5 4.9 4.9M19.1 19.1l-1.6-1.6M17.5 6.5l1.6-1.6M4.9 19.1l1.6-1.6"></path>
+    </svg>
+
+    <svg
+      class="theme-toggle__moon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z"></path>
+    </svg>
+  </span>
+</button>
+
+<style>
+  .theme-toggle {
+    display: none; /* Revealed only once the head script has run. */
+    place-items: center;
+    inline-size: 2.75rem; /* 44px — full touch target, matches the menu button */
+    block-size: 2.75rem;
+    border-radius: 9999px;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background-color 200ms ease;
+  }
+
+  :global(:root[data-js]) .theme-toggle {
+    display: grid;
+  }
+
+  .theme-toggle:hover {
+    background: --alpha(var(--color-ink) / 7%);
+  }
+
+  /* The two icons share one cell so the swap is a cross-fade in place rather
+     than a reflow. */
+  .theme-toggle__icons {
+    display: grid;
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+  }
+
+  .theme-toggle__icons > svg {
+    grid-area: 1 / 1;
+    inline-size: 100%;
+    block-size: 100%;
+    transition:
+      opacity 260ms ease,
+      transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* --is-dark is 1 in dark mode and 0 in light, whichever of the three states
+     produced it. Sun in dark mode ("switch to light"), moon in light mode. */
+  .theme-toggle__sun {
+    opacity: var(--is-dark);
+    transform: rotate(calc((1 - var(--is-dark)) * -90deg));
+  }
+
+  .theme-toggle__moon {
+    opacity: calc(1 - var(--is-dark));
+    transform: rotate(calc(var(--is-dark) * 90deg));
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'myridesg-theme'
+
+  /** Address-bar tint. Must track --color-paper in global.css. */
+  const THEME_COLOR = { light: '#ffffff', dark: '#171110' } as const
+
+  type Theme = keyof typeof THEME_COLOR
+
+  const root = document.documentElement
+  const osDark = window.matchMedia('(prefers-color-scheme: dark)')
+
+  /** What the page is actually showing right now — attribute if set, else OS. */
+  function resolve(): Theme {
+    const explicit = root.dataset.theme
+    if (explicit === 'light' || explicit === 'dark') return explicit
+    return osDark.matches ? 'dark' : 'light'
+  }
+
+  /**
+   * The two media-scoped <meta name="theme-color"> tags in BaseLayout are
+   * correct while the OS is being followed, and wrong the moment it is not —
+   * a media query cannot see an attribute. Collapse them into one explicit tag.
+   */
+  function paintChrome(theme: Theme) {
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta, i) => {
+        if (i > 0) return meta.remove()
+        meta.removeAttribute('media')
+        meta.content = THEME_COLOR[theme]
+      })
+  }
+
+  function syncButtons(theme: Theme) {
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(theme === 'dark'))
+      button.setAttribute(
+        'aria-label',
+        theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+      )
+    })
+  }
+
+  /** Reflect a theme the reader did not ask for — OS changed under us. */
+  function reflect(theme: Theme) {
+    paintChrome(theme)
+    syncButtons(theme)
+  }
+
+  /** Pin a theme the reader chose, and remember it. */
+  function choose(theme: Theme) {
+    root.dataset.theme = theme
+    reflect(theme)
+
+    // Private modes and blocked site data throw on write. The toggle should
+    // still work for the rest of the visit when they do.
+    try {
+      localStorage.setItem(STORAGE_KEY, theme)
+    } catch {}
+  }
+
+  // Match whatever the head script already painted, without writing a
+  // preference the reader has never expressed.
+  reflect(resolve())
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => choose(resolve() === 'dark' ? 'light' : 'dark'))
+  })
+
+  // Keep following the OS if it changes and nothing was ever chosen here. The
+  // attribute stays absent so the media query in global.css keeps driving the
+  // colours; only the icon and address bar need telling.
+  osDark.addEventListener('change', (event) => {
+    if (!root.dataset.theme) reflect(event.matches ? 'dark' : 'light')
+  })
+</script>

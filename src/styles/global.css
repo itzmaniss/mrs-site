@@ -90,12 +90,23 @@
 /* ============================================================================
  * Dark mode
  *
- * Follows the system preference only — there is no toggle. This is a brochure
- * site, and a theme switcher is app furniture that would need persisting.
+ * Three states, resolved in this order:
+ *
+ *   html[data-theme="dark"]    the reader chose dark
+ *   html[data-theme="light"]   the reader chose light
+ *   no attribute               follow the operating system
+ *
+ * The attribute is written by ThemeToggle.astro's inline head script before
+ * first paint, so switching never flashes. With JavaScript off the attribute is
+ * never set, the media query below still gives OS-correct colours, and the
+ * toggle simply hides itself.
  *
  * Every value comes from the ember dark ramp and dark ColorTokens in
  * packages/tokens (the same set apps/mobile uses), so the two products stay
  * visually related. Nothing here is invented.
+ *
+ * The ramp is declared ONCE as --ramp-* and mapped onto the brand tokens by
+ * both selectors below, so the OS path and the explicit path cannot drift.
  *
  * Overriding the tokens is enough on its own: Tailwind emits colours as
  * var(--color-*), and even alpha utilities compile to
@@ -108,21 +119,66 @@
  * the alternating structure survives instead of flattening into one dark sheet.
  * ==========================================================================*/
 
+:root {
+  /* 1 in dark, 0 in light, whichever of the three states produced it. Lets a
+     component react to the theme — ThemeToggle's icon swap — without having to
+     restate the three-way logic below and risk disagreeing with it. */
+  --is-dark: 0;
+
+  --ramp-paper: #171110; /* ember-1  · page ground */
+  --ramp-soft: #201513; /* ember-2  · alternating band */
+  --ramp-rose: #341b17; /* ember-3  · tinted panel */
+  --ramp-charcoal: #2c2321; /* card     · raised surface */
+  --ramp-ink: #fafafa; /* foreground */
+  --ramp-muted: #a7a1a0; /* muted foreground */
+  --ramp-red: #d33722; /* ember-9  · brand, readable on dark */
+  --ramp-ember: #e55540; /* ember-10 · interaction */
+}
+
+/* Applied when the OS prefers dark and the reader has not overridden it. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-paper: #171110; /* ember-1  · page ground */
-    --color-soft: #201513; /* ember-2  · alternating band */
-    --color-rose: #341b17; /* ember-3  · tinted panel */
-    --color-charcoal: #2c2321; /* card     · raised surface */
-    --color-black: #080808; /* unchanged — still the deepest band */
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --is-dark: 1;
 
-    --color-ink: #fafafa; /* foreground */
-    --color-muted: #a7a1a0; /* muted foreground */
+    --color-paper: var(--ramp-paper);
+    --color-soft: var(--ramp-soft);
+    --color-rose: var(--ramp-rose);
+    --color-charcoal: var(--ramp-charcoal);
+    /* --color-black is deliberately unchanged — still the deepest band. */
 
-    --color-red: #d33722; /* ember-9  · brand, readable on dark */
-    --color-ember: #e55540; /* ember-10 · interaction */
-    --color-ember-on-dark: #f57c67; /* ember-11 · identical in both modes */
+    --color-ink: var(--ramp-ink);
+    --color-muted: var(--ramp-muted);
+
+    --color-red: var(--ramp-red);
+    --color-ember: var(--ramp-ember);
+    /* --color-ember-on-dark is ember-11, identical in both modes. */
   }
+}
+
+/* Applied when the reader explicitly chose dark, whatever the OS says. Listed
+   after the media query so it wins when both match. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --is-dark: 1;
+
+  --color-paper: var(--ramp-paper);
+  --color-soft: var(--ramp-soft);
+  --color-rose: var(--ramp-rose);
+  --color-charcoal: var(--ramp-charcoal);
+
+  --color-ink: var(--ramp-ink);
+  --color-muted: var(--ramp-muted);
+
+  --color-red: var(--ramp-red);
+  --color-ember: var(--ramp-ember);
+}
+
+/* Explicit light needs no token overrides — @theme already holds the light
+   palette — but the UA still has to be told, or it renders scrollbars and form
+   controls dark on a machine set to dark. */
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 /* ============================================================================

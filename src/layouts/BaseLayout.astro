@@ -51,6 +51,26 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
     {socialImage && <meta name="twitter:image" content={socialImage} />}
 
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Must run before first paint, and must stay inline and unbundled — a
+        deferred module would let the light palette paint first and then swap,
+        which is the flash every theme toggle is judged on. It sits after the
+        theme-color tags above so ThemeToggle can find them.
+
+        `data-js` is what reveals the toggle button. Rendering it hidden and
+        showing it here means a reader with JavaScript off never sees a control
+        that cannot work, and no one sees it pop in late. */}
+    <script is:inline>
+      ;(() => {
+        try {
+          const stored = localStorage.getItem('myridesg-theme')
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.dataset.theme = stored
+          }
+        } catch {}
+        document.documentElement.dataset.js = ''
+      })()
+    </script>
   </head>
 
   <body>
