@@ -1,0 +1,119 @@
+---
+/**
+ * The app's bottom tab bar, from
+ * myridesg-v2/apps/mobile/app/(app)/(tabs)/_layout.tsx.
+ *
+ * Only the Bike screen renders it: fuel and workshops are pushed destinations,
+ * which is why neither of those captures showed one either.
+ */
+
+const TABS = [
+  {
+    label: 'Home',
+    path: 'M4 10.4 12 4l8 6.4V19a1.2 1.2 0 0 1-1.2 1.2h-3.4v-5.4H8.6v5.4H5.2A1.2 1.2 0 0 1 4 19Z',
+  },
+  {
+    label: 'Bike',
+    active: true,
+    path: 'M5.6 18.4a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm12.8 0a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm-12.8-3.2h5l3-5.6h4M12.6 9.6 11 6.4H8.4m8.4 3.2 1.6 5.6',
+  },
+  {
+    label: 'Profile',
+    path: 'M12 11.6a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Zm-6.4 8.4a6.4 6.4 0 0 1 12.8 0',
+  },
+  { label: 'ride', path: 'm7 9.5 5 6 5-6Z' },
+]
+---
+
+<nav class="tabs" aria-hidden="true">
+  {
+    TABS.slice(0, 2).map((tab) => (
+      <span class:list={['tabs__item', tab.active && 'tabs__item--active']}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d={tab.path} stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        {tab.label}
+      </span>
+    ))
+  }
+
+  {/* The log button. Overlaps the bar's top edge, as in the app. */}
+  <span class="tabs__log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+      <path d="M12 5v14M5 12h14" stroke-linecap="round"></path>
+    </svg>
+  </span>
+
+  {
+    TABS.slice(2).map((tab) => (
+      <span class="tabs__item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d={tab.path} stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        {tab.label}
+      </span>
+    ))
+  }
+
+  <span class="tabs__home-indicator"></span>
+</nav>
+
+<style>
+  .tabs {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    padding: 0.7em 0.4em 1.1em;
+    border-top: 1px solid var(--app-border);
+    background: var(--app-card);
+  }
+
+  .tabs__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25em;
+    font-size: 0.8em;
+    color: var(--app-muted-fg);
+  }
+
+  .tabs__item svg {
+    inline-size: 1.6em;
+    block-size: 1.6em;
+  }
+
+  .tabs__item--active {
+    color: var(--app-primary);
+  }
+
+  .tabs__log {
+    display: grid;
+    place-items: center;
+    justify-self: center;
+    inline-size: 3.1em;
+    block-size: 3.1em;
+    margin-top: -1.6em;
+    border: 0.35em solid var(--app-card);
+    border-radius: 999px;
+    background: var(--app-primary);
+    color: #ffffff;
+  }
+
+  .tabs__log svg {
+    inline-size: 1.4em;
+    block-size: 1.4em;
+  }
+
+  .tabs__home-indicator {
+    grid-column: 1 / -1;
+    justify-self: center;
+    inline-size: 8em;
+    block-size: 0.35em;
+    margin-top: 0.7em;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--app-fg) 55%, transparent);
+  }
+</style>

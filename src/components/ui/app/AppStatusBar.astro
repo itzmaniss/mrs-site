@@ -1,0 +1,96 @@
+---
+/**
+ * The device status bar, drawn by the screen rather than by PhoneFrame.
+ *
+ * It belongs to the screen because its tone does: on a real phone the status
+ * bar inherits the style the foreground screen asks for, and all three screens
+ * here run a dark band (the red glow, or brandCharcoal) up under it, so all
+ * three want light content. PhoneFrame's own `chrome` sits above the slot and
+ * could not see that.
+ *
+ * The times match the captures these screens replaced, so the three panels read
+ * as three moments rather than three copies.
+ *
+ * It is positioned, not in flow: on a device the status bar sits OVER the
+ * screen and the screen's own header runs up underneath it. Each screen leaves
+ * STATUS_SAFE_TOP of room for it — the same job insets.top does in the app.
+ */
+
+interface Props {
+  time: string
+}
+
+const { time } = Astro.props
+---
+
+<div class="status">
+  <span class="status__time">{time}</span>
+
+  {/* Dynamic island. Always black — it is a cutout, not a surface. */}
+  <span class="status__island"></span>
+
+  <span class="status__icons" aria-hidden="true">
+    <svg viewBox="0 0 17 11" fill="currentColor">
+      <rect x="0" y="7" width="3" height="4" rx="0.5" opacity="0.4"></rect>
+      <rect x="4.5" y="5" width="3" height="6" rx="0.5"></rect>
+      <rect x="9" y="2.5" width="3" height="8.5" rx="0.5"></rect>
+      <rect x="13.5" y="0" width="3" height="11" rx="0.5"></rect>
+    </svg>
+
+    <svg viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M1 4.4a10 10 0 0 1 14 0" stroke-linecap="round"></path>
+      <path d="M3.6 7.2a6.2 6.2 0 0 1 8.8 0" stroke-linecap="round"></path>
+      <circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none"></circle>
+    </svg>
+
+    <svg viewBox="0 0 20 11" fill="none">
+      <rect x="0.5" y="0.5" width="16" height="10" rx="2.6" stroke="currentColor" opacity="0.45"></rect>
+      <rect x="2" y="2" width="13" height="7" rx="1.4" fill="currentColor"></rect>
+      <path d="M18.4 4v3a2 2 0 0 0 0-3Z" fill="currentColor" opacity="0.45"></path>
+    </svg>
+  </span>
+</div>
+
+<style>
+  .status {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75em 1.5em 0.2em;
+    /* Every screen behind this runs a dark band, so the content is fixed white
+       in both schemes — the same call the app makes for GLOW_HEADER. */
+    color: #ffffff;
+  }
+
+  .status__time {
+    font-size: 1.05em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status__island {
+    position: absolute;
+    left: 50%;
+    top: 0.5em;
+    translate: -50% 0;
+    inline-size: 32%;
+    block-size: 2.1em;
+    border-radius: 999px;
+    background: #000000;
+  }
+
+  .status__icons {
+    display: flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+
+  .status__icons svg {
+    block-size: 0.95em;
+    inline-size: auto;
+  }
+</style>

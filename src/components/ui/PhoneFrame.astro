@@ -17,6 +17,13 @@
  * The frame locks itself to 9:19.57, the exact ratio of the real app captures
  * in src/assets/app/ (549 x 1194). Anything slotted in therefore sits in a
  * true-to-life screen area rather than a box that happens to be tall.
+ *
+ * It also publishes --pf-scale: the factor from a 390px device viewport (the
+ * app's own layout width) down to this frame. The rendered app screens lay
+ * themselves out at 390 and scale by it, so their proportions are the app's
+ * at any frame size, and no size in them has to be re-tuned when `width`
+ * changes. 390 x 848 is the same 549:1194 ratio, so the scaled screen lands
+ * exactly on the frame's screen area.
  */
 
 interface Props {
@@ -58,8 +65,12 @@ const v = VARIANTS[variant]
 const SCREEN_RATIO = 1194 / 549
 const height = Math.round(width * SCREEN_RATIO)
 
+// Unitless on purpose — it multiplies a transform, so it cannot carry px.
+const DEVICE_WIDTH = 390
+
 const frameStyle = [
   `--pf-width:${width}px`,
+  `--pf-scale:${(width / DEVICE_WIDTH).toFixed(4)}`,
   `--pf-height:${height}px`,
   `--pf-bezel:${v.bezel}`,
   `--pf-border:${v.border}px`,
@@ -111,6 +122,13 @@ const frameStyle = [
 
 <style>
   .phone-frame {
+    /* content-box, so `width` means the SCREEN width as the prop documents,
+       rather than the screen plus two bezels. Under Tailwind's preflight
+       border-box the bezel ate 2 x --pf-border off the screen, which left the
+       screen area at 252:587 instead of the 549:1194 the height assumes. That
+       was invisible while the slot held an object-cover bitmap and became a
+       horizontal overflow the moment it held real layout. */
+    box-sizing: content-box;
     width: var(--pf-width);
     max-width: 100%;
     flex-shrink: 0;
@@ -152,6 +170,10 @@ const frameStyle = [
     flex: 1;
     min-height: 0;
     overflow: hidden;
+    /* Lets a rendered app screen scale to the frame's REAL width rather than
+       to the `width` prop. They differ below 26rem, where the rule at the
+       bottom of this file makes the frame fluid. */
+    container-type: inline-size;
   }
 
   /* Scale down rather than overflow on narrow viewports. */

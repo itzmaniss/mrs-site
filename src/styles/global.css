@@ -182,6 +182,93 @@
 }
 
 /* ============================================================================
+ * App screen tokens
+ *
+ * The phone mockups in Product.astro render the real app UI as HTML rather than
+ * as flat screenshots, so they need the APP's palette, not this site's. Both
+ * come from packages/tokens in myridesg-v2 but they are different sets — the
+ * app's `background` is hsl(30 20% 98%), an off-white, where this site's paper
+ * is pure white. Mixing them made the mockup read as a website in a phone.
+ *
+ * Values are ColorTokens.light / ColorTokens.dark from
+ * myridesg-v2/packages/tokens/src/colors.ts, verbatim. Sync them, do not
+ * reinvent them, and do not use them outside a phone frame.
+ *
+ * light-dark() does the theme switching in one declaration instead of repeating
+ * this block under the media query and both [data-theme] selectors. It resolves
+ * against the used `color-scheme`, which the three states above already set
+ * correctly — including the default, where the color-scheme meta in BaseLayout
+ * leaves it as "light dark" and the OS decides. The plain value on the line
+ * before each is the fallback for anything too old to know light-dark().
+ * ==========================================================================*/
+
+.app-screen {
+  --app-bg: hsl(30 20% 98%);
+  --app-bg: light-dark(hsl(30 20% 98%), hsl(9 18% 8%));
+  --app-fg: hsl(0 0% 3.9%);
+  --app-fg: light-dark(hsl(0 0% 3.9%), hsl(0 0% 98%));
+  --app-card: hsl(0 0% 100%);
+  --app-card: light-dark(hsl(0 0% 100%), hsl(9 14% 15%));
+  --app-muted: hsl(0 14% 96%);
+  --app-muted: light-dark(hsl(0 14% 96%), hsl(9 9% 22%));
+  --app-muted-fg: hsl(9 3% 45%);
+  --app-muted-fg: light-dark(hsl(9 3% 45%), hsl(9 4% 64%));
+  --app-primary: hsl(7 77% 47%);
+  --app-primary: light-dark(hsl(7 77% 47%), hsl(7 72% 48%));
+  --app-destructive: hsl(353 62% 42%);
+  --app-destructive: light-dark(hsl(353 62% 42%), hsl(355 62% 52%));
+  --app-border: hsl(12 8% 88%);
+  --app-border: light-dark(hsl(12 8% 88%), hsl(9 8% 32%));
+
+  /* brandCharcoal — the feature header band, scheme-invariant by design. */
+  --app-charcoal: #393939;
+
+  /* GLASS, from features/home/glass.ts: the translucent hero card that lets
+     the glow read through. Text flips with the scheme, the fill does not. */
+  --glass-fill: rgba(255, 251, 251, 0.45);
+  --glass-fill: light-dark(rgba(255, 251, 251, 0.45), rgba(20, 16, 15, 0.4));
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-border: light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.14));
+  --glass-title: #2a0f0a;
+  --glass-title: light-dark(#2a0f0a, #ffffff);
+  --glass-muted: rgba(58, 20, 14, 0.65);
+  --glass-muted: light-dark(rgba(58, 20, 14, 0.65), rgba(255, 255, 255, 0.6));
+  --glass-soft: rgba(58, 20, 14, 0.85);
+  --glass-soft: light-dark(rgba(58, 20, 14, 0.85), rgba(255, 255, 255, 0.85));
+  --glass-watermark: rgba(57, 57, 57, 0.06);
+  --glass-watermark: light-dark(rgba(57, 57, 57, 0.06), rgba(255, 255, 255, 0.05));
+  --glass-urgent: #b0291c;
+  --glass-urgent: light-dark(#b0291c, #f4795b);
+
+  color: var(--app-fg);
+  background: var(--app-bg);
+
+  /* Lay out at the app's own viewport, then scale to whatever the frame is.
+     Every measurement inside a screen is therefore the app's measurement, not
+     a value re-guessed for a 270px mockup, and changing PhoneFrame's `width`
+     re-renders the screens correctly instead of breaking their proportions.
+     390 x 848 keeps the frame's 549:1194 ratio.
+
+     16px root: `em` inside a screen then means device px, which is what the
+     React Native source is written in. */
+  inline-size: 390px;
+  block-size: 848px;
+  flex-shrink: 0;
+
+  /* --pf-scale is PhoneFrame's `width` prop over 390. It is right whenever the
+     frame renders at that width, and wrong below 26rem where the frame goes
+     fluid — which left a dead strip down the side of the screen. The container
+     query measures what the frame actually is, so both cases are correct; the
+     line above it stays as the fallback. Only ever inside a PhoneFrame, which
+     is what establishes the container. */
+  transform: scale(var(--pf-scale, 1));
+  transform: scale(calc(100cqw / 390px));
+  transform-origin: top left;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* ============================================================================
  * Base
  * ==========================================================================*/
 
