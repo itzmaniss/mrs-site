@@ -84,9 +84,66 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
         document.documentElement.dataset.js = ''
       })()
     </script>
+
+    {/* Detaches the fragment from a cross-page anchor arrival BEFORE the target
+        element is parsed, so the UA never has anything to scroll to and cannot
+        paint a frame at the destination. SiteNav.astro then flies the reader
+        there from the top; it reads the stashed value below instead of
+        location.hash.
+
+        This has to be inline and in <head>. SiteNav's copy is a bundled module,
+        which runs after the document is parsed — in Chromium that landed before
+        first paint every time, but the ordering is not guaranteed, and on a slow
+        cold load of a long guide the browser could paint once at the fragment
+        first. That flash is the whole bug, so the fix belongs where it cannot
+        race.
+
+        Gated identically to SiteNav's block, because a hash this script hides
+        is a hash that script must be willing to use: fresh navigations only —
+        back/forward and reload must land where the reader already was — and
+        never under reduced motion, where the native jump is the correct
+        behaviour. The navigation entry is already populated this early —
+        measured at document_start with readyState "loading" — so no fallback to
+        the deprecated performance.navigation is needed. */}
+    <script is:inline>
+      ;(() => {
+        const hash = location.hash
+        if (hash.length < 2) return
+
+        try {
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        } catch {
+          return
+        }
+
+        const entry = performance.getEntriesByType('navigation')[0]
+        if (entry?.type !== 'navigate') return
+
+        window.__pendingHash = hash
+        history.replaceState(history.state, '', location.pathname + location.search)
+      })()
+    </script>
   </head>
 
-  <body>
+  <body class="flex min-h-dvh flex-col">
     <slot />
   </body>
 </html>
+
+<style is:global>
+  /* Sticky footer. Every page passes the same three children into the slot —
+     SiteNav, a <main>, then SiteFooter — so this belongs here rather than being
+     repeated on each page.
+
+     SiteNav is position:fixed and so contributes no flow height; the column
+     only has to divide the viewport between <main> and the footer, which is why
+     a bare min-h-dvh on <body> is enough and no header offset is needed.
+
+     flex-grow on its own, keeping the default `auto` basis, rather than
+     `flex: 1`: <main> stays sized by its own content and only absorbs space
+     that is left over once min-height stretches <body> past it. A page taller
+     than the viewport lays out exactly as it did before. */
+  body > main {
+    flex-grow: 1;
+  }
+</style>

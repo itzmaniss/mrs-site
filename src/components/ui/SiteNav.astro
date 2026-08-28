@@ -8,7 +8,11 @@ import ThemeToggle from './ThemeToggle.astro'
     class="mx-auto flex max-w-4xl items-center justify-between gap-6 rounded-pill bg-paper/95 px-5 py-3 shadow-[0_4px_32px_rgba(8,8,8,0.18)] backdrop-blur-sm md:px-6"
     aria-label="Primary"
   >
-    <a href="/" class="font-display text-xl font-700 tracking-tight whitespace-nowrap">
+    <a
+      href="/"
+      data-home-link
+      class="font-display text-xl font-700 tracking-tight whitespace-nowrap"
+    >
       MyRide<span class="text-red">SG</span>
     </a>
 
@@ -258,6 +262,132 @@ import ThemeToggle from './ThemeToggle.astro'
       link.addEventListener('click', () => {
         menu.open = false
       })
+    })
+  })
+</script>
+
+<script>
+  /* `scroll-behavior: smooth` in global.css only ever animates a scroll WITHIN
+   * a document that is already loaded. Two of this nav's links are not that:
+   *
+   *   /#features, /#faq  from any page other than the home page, these are full
+   *                      cross-document navigations. The new document is simply
+   *                      rendered already scrolled to the target, so the reader
+   *                      is deposited mid-page with no sense of having moved.
+   *   /                  from the home page itself this is a same-page reload,
+   *                      which the browser services as a navigation — a cut, not
+   *                      a scroll back to the top.
+   *
+   * Both are restored here. If this script never runs, every href is still a
+   * plain link that lands in exactly the right place; only the movement between
+   * is lost, which is the correct thing to degrade.
+   */
+
+  const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  /** `/index.html` and `/` are the same route once built. */
+  const route = (path: string) => path.replace(/index\.html$/, '')
+
+  /* ── Cross-page anchors ──────────────────────────────────────────────────
+   *
+   * Only a fresh navigation gets animated. A back or forward traversal must
+   * land the reader exactly where they left — `history.scrollRestoration` is
+   * deliberately left on its 'auto' default so the browser keeps doing that,
+   * and replaying an animation over the top of a restore would both fight it
+   * and misrepresent where they are. A reload is excluded for the same reason.
+   */
+  const navigation = performance.getEntriesByType('navigation')[0] as
+    | PerformanceNavigationTiming
+    | undefined
+
+  // BaseLayout's inline head script detaches the fragment before the target is
+  // ever parsed, and stashes it here — that is what guarantees the UA cannot
+  // paint a frame at the destination first. It applies the same gates this block
+  // does, so a stashed value is already known to be a fresh, non-reduced-motion
+  // navigation. location.hash remains the fallback for the case where that
+  // script did not run at all.
+  const pending = (window as unknown as { __pendingHash?: string }).__pendingHash
+  const hash = pending ?? location.hash
+  const target =
+    hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null
+
+  if (target && navigation?.type === 'navigate' && !reduced()) {
+    // Strip the fragment for the duration of the flight. The UA re-runs "scroll
+    // to the fragment" as late layout shifts come in — a hero image landing,
+    // a font swapping — and each of those would yank us to the destination
+    // mid-animation. With no fragment in the document's URL there is nothing
+    // for it to re-target. Already done by the head script in the normal path;
+    // repeating it is harmless and covers the fallback.
+    const bare = location.pathname + location.search
+    history.replaceState(history.state, '', bare)
+
+    // `scroll-behavior: smooth` applies to the legacy scrollTo(x, y) form too,
+    // so this reset has to name `instant` explicitly. Left implicit it becomes
+    // an animation of its own, running upwards into the one starting below.
+    window.scrollTo({ top: 0, behavior: 'instant' })
+
+    // Two frames. The first commits the reset, the second starts the animation
+    // from a position the reader has actually been shown. Both in one frame
+    // collapse into a single layout and the journey is invisible again — which
+    // is the bug this whole block exists to fix.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // scrollIntoView rather than a computed offset: the header is fixed, and
+        // `:where([id]) { scroll-margin-top: 6rem }` in global.css already
+        // accounts for it. Measuring the header here would duplicate that number
+        // and then drift from it.
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+        // Put the fragment back once we have arrived, so the URL is shareable
+        // and a reload lands in the same place. replaceState, never
+        // `location.hash =`: assigning the hash would jump the page and push a
+        // junk entry into history, whereas replaceState does neither.
+        const restore = () => history.replaceState(history.state, '', bare + hash)
+
+        if ('onscrollend' in window) {
+          window.addEventListener('scrollend', restore, { once: true })
+        } else {
+          // Safari has no scrollend, so a fixed delay is the only option there.
+          // Being early is harmless — replaceState does not scroll, and by then
+          // the document has loaded, so the UA is no longer fragment-seeking.
+          setTimeout(restore, 1000)
+        }
+      })
+    })
+  }
+
+  /* ── Brand link ──────────────────────────────────────────────────────────
+   *
+   * From another page it stays an ordinary navigation. From the home page,
+   * scrolled down, the reader is asking to go back to the top of the page they
+   * are already on, and a reload is a poor way to say that.
+   */
+  document.querySelectorAll<HTMLAnchorElement>('[data-home-link]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      // Anything that is not a plain left click is the reader asking the browser
+      // for something else — a new tab, a download, a saved link. Never take
+      // those over.
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return
+      }
+
+      if (route(new URL(link.href).pathname) !== route(location.pathname)) return
+
+      event.preventDefault()
+      window.scrollTo({ top: 0, behavior: reduced() ? 'instant' : 'smooth' })
+
+      // A lingering #faq would otherwise send the next reload straight back down
+      // the page the reader just asked to leave.
+      if (location.hash) {
+        history.replaceState(history.state, '', location.pathname + location.search)
+      }
     })
   })
 </script>
