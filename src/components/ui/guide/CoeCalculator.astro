@@ -1,0 +1,114 @@
+---
+/**
+ * `coeCalculator` block from the Sanity article body. One instance, in the COE
+ * guide.
+ *
+ * v2's version is a React island (packages/ui/src/calculators/COECalculator.tsx).
+ * React is not installed here and AGENTS.md rule 2 says an island has to earn
+ * itself — this does not. The whole calculation is `price / years` and
+ * `annual / 12`, which is a handful of lines of inline script, the same bar the
+ * theme toggle clears.
+ *
+ * The inputs start EMPTY on purpose. v2 seeds the COE price at 8000, and a
+ * figure sitting in the box reads as MyRideSG quoting a rate. COE premiums move
+ * every fortnight and PQP every month, so a baked-in number is a stale claim the
+ * moment it ships (AGENTS.md rule 6). The reader supplies the figure; this only
+ * does the arithmetic on it, and says where the real number comes from.
+ */
+---
+
+<div class="my-8 rounded-md border border-ink/12 px-6 py-6" data-coe-calc>
+  <span class="eyebrow block text-muted">COE cost calculator</span>
+
+  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+    <label class="block">
+      <span class="text-sm font-semibold text-ink">COE / PQP paid (S$)</span>
+      <input
+        type="number"
+        inputmode="numeric"
+        min="0"
+        step="100"
+        placeholder="e.g. 10000"
+        data-coe-price
+        class:list={[
+          'mt-1.5 block w-full rounded-xs border border-ink/20 bg-paper px-3 py-2',
+          'text-md text-ink placeholder:text-muted/70',
+        ]}
+      />
+    </label>
+
+    <label class="block">
+      <span class="text-sm font-semibold text-ink">Years of COE</span>
+      <input
+        type="number"
+        inputmode="numeric"
+        min="1"
+        max="10"
+        step="1"
+        placeholder="e.g. 5"
+        data-coe-years
+        class:list={[
+          'mt-1.5 block w-full rounded-xs border border-ink/20 bg-paper px-3 py-2',
+          'text-md text-ink placeholder:text-muted/70',
+        ]}
+      />
+    </label>
+  </div>
+
+  <div class="mt-5 grid gap-4 rounded-xs bg-soft px-4 py-4 sm:grid-cols-2">
+    <div>
+      <span class="eyebrow block text-muted">Per year</span>
+      <output data-coe-annual class="mt-1 block text-xl font-semibold text-ink">—</output>
+    </div>
+
+    <div>
+      <span class="eyebrow block text-muted">Per month</span>
+      <output data-coe-monthly class="mt-1 block text-xl font-semibold text-ink">—</output>
+    </div>
+  </div>
+
+  <p class="mt-4 text-sm leading-relaxed text-muted">
+    Straight-line cost of the premium only — it excludes road tax, insurance and
+    servicing. Check LTA for the current PQP before you rely on a figure.
+  </p>
+</div>
+
+<script>
+  // Enhancement only. With JavaScript off the reader still sees the inputs, the
+  // em dashes and the note explaining what the sum would be.
+  const money = new Intl.NumberFormat('en-SG', {
+    style: 'currency',
+    currency: 'SGD',
+    maximumFractionDigits: 0,
+  })
+
+  document.querySelectorAll<HTMLElement>('[data-coe-calc]').forEach((root) => {
+    const priceEl = root.querySelector<HTMLInputElement>('[data-coe-price]')
+    const yearsEl = root.querySelector<HTMLInputElement>('[data-coe-years]')
+    const annualEl = root.querySelector<HTMLOutputElement>('[data-coe-annual]')
+    const monthlyEl = root.querySelector<HTMLOutputElement>('[data-coe-monthly]')
+
+    if (!priceEl || !yearsEl || !annualEl || !monthlyEl) return
+
+    const update = () => {
+      const price = Number(priceEl.value)
+      const years = Number(yearsEl.value)
+
+      // Blank, negative, non-numeric or a zero term all mean "no answer yet"
+      // rather than zero — showing S$0 would be a wrong figure, not an empty one.
+      if (!Number.isFinite(price) || !Number.isFinite(years) || price <= 0 || years <= 0) {
+        annualEl.textContent = '—'
+        monthlyEl.textContent = '—'
+        return
+      }
+
+      const annual = price / years
+      annualEl.textContent = money.format(annual)
+      monthlyEl.textContent = money.format(annual / 12)
+    }
+
+    priceEl.addEventListener('input', update)
+    yearsEl.addEventListener('input', update)
+    update()
+  })
+</script>

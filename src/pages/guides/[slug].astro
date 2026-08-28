@@ -1,8 +1,8 @@
 ---
-import { PortableText } from 'astro-portabletext'
 import type { GetStaticPaths } from 'astro'
 import type { PortableTextProps } from 'astro-portabletext/types'
 import ProseLayout from '@/layouts/ProseLayout.astro'
+import GuideBody from '@/components/ui/guide/GuideBody.astro'
 import { listGuideArticles, getGuideArticle } from '@/content/usecases'
 import { contentRepo } from '@/lib/content'
 import type { Article } from '@/content/entities'
@@ -52,7 +52,7 @@ const updated = new Intl.DateTimeFormat('en-SG', {
 >
   <p class="text-lg leading-relaxed text-muted">{article.description}</p>
 
-  <PortableText value={blocks} />
+  <GuideBody value={blocks} />
 
   <p class="mt-14 text-sm">
     <a href="/guides" class="text-red underline underline-offset-2">All guides</a>

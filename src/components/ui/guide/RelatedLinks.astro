@@ -1,0 +1,65 @@
+---
+/**
+ * `relatedLinks` block from the Sanity article body.
+ *
+ * v2 ships this unfinished — packages/ui/src/patterns/PortableBody.tsx renders
+ * `<RelatedLinks slugs={[]} />` with a TODO saying the GROQ projection needs to
+ * dereference the inline body references. That projection now exists in
+ * src/content/sanity/content-repository.ts, so each entry arrives already
+ * resolved to { slug, title, category } and this renders for real.
+ *
+ * The references are weak, so a deleted target dereferences to null; and a
+ * reference may point at a bike-model or news article, which has no page on
+ * this site. Both are filtered out rather than linked into a 404.
+ */
+interface Link {
+  slug?: string | null
+  title?: string | null
+  category?: string | null
+}
+
+interface Props {
+  node: { slugs?: Array<Link | null> | null }
+}
+
+const { node } = Astro.props
+
+const links = (node.slugs ?? []).filter(
+  (link): link is { slug: string; title: string; category: string } =>
+    Boolean(link?.slug && link?.title && link?.category === 'guide'),
+)
+---
+
+{
+  links.length > 0 && (
+    <aside class="my-9 rounded-md bg-soft px-6 py-6">
+      {/* A span, not a heading: this is a widget label, and promoting it to h2
+          would inject a section into the guide's outline that the author never
+          wrote. `.prose-body h2` would also override the eyebrow sizing. */}
+      <span class="eyebrow block text-muted">Related guides</span>
+
+      <ul class="mt-4 flex flex-col gap-2.5">
+        {links.map((link) => (
+          <li class="leading-snug">
+            <a href={`/guides/${link.slug}`}>{link.title}</a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+}
+
+<style>
+  /* The list is the block's whole content, so it should not inherit
+     ProseLayout's paragraph spacing and indentation. Link colour is left alone
+     — these ARE prose links and should look like the rest of the article. */
+  ul {
+    margin-bottom: 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  li {
+    margin-bottom: 0;
+  }
+</style>

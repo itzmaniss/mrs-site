@@ -1,9 +1,17 @@
 /**
  * VENDORED from myridesg-v2 @ packages/data/src/sanity/content-repository.ts.
  *
- * The GROQ is copied verbatim apart from the image projections, which this site
- * does not map (see ./mappers.ts). Keep it that way — if a query drifts, the
- * two sites start disagreeing about what a guide is.
+ * The GROQ is copied verbatim apart from two projections. Keep it that way — if
+ * a query drifts, the two sites start disagreeing about what a guide is.
+ *
+ *   1. No image projections, which this site does not map (see ./mappers.ts).
+ *   2. `body[]` dereferences the references inside a `relatedLinks` block to
+ *      { slug, title, category }. Unprojected they arrive as bare _ref strings
+ *      and the block cannot render a link, which is exactly the state v2 is in:
+ *      packages/ui/src/patterns/PortableBody.tsx passes `slugs={[]}` under a
+ *      TODO saying this projection is what it needs. Neither of these changes
+ *      which documents are guides or how they are ordered — the two sites still
+ *      agree about that — but the fix is worth porting back to the monorepo.
  *
  * The monorepo's `next: { tags: [...] }` fetch options are gone: those drive
  * Next's on-demand revalidation, and there is no server here to revalidate. A
@@ -21,7 +29,15 @@ import {
 
 const ARTICLE_BY_SLUG = /* groq */ `
   *[_type == "article" && slug.current == $slug][0]{
-    _id, title, slug, category, description, body, publishedAt, updatedAt, tags,
+    _id, title, slug, category, description,
+    body[]{
+      ...,
+      _type == "relatedLinks" => {
+        ...,
+        "slugs": slugs[]->{ "slug": slug.current, title, category }
+      }
+    },
+    publishedAt, updatedAt, tags,
     "author": author->{ slug, name },
     "relatedSlugs": relatedSlugs[]->{ slug },
     seo

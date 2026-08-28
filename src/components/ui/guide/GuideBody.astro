@@ -1,0 +1,49 @@
+---
+/**
+ * Renders an article body, mapping every custom Portable Text type the article
+ * schema allows to an .astro component.
+ *
+ * Without this map astro-portabletext falls back to UnknownType, which emits a
+ * `display:none` div holding a warning string. That failure is quiet in the
+ * worst way: the page looks fine, nothing errors, and the FAQ, comparison table
+ * or callout the author wrote is simply not on it. Every type in
+ * myridesg-v2/apps/admin/src/sanity/schemas/article.ts's `body` array must have
+ * an entry here — if a new block type is added to the schema, add it here too.
+ *
+ * The one deliberate omission is `image`. The schema permits it, but no article
+ * uses it and mappers.ts drops image projections (AGENTS.md rule 3 also means an
+ * image would have to come through astro:assets, which cannot process a remote
+ * Sanity URL at build time without the CDN loader). `onMissingComponent` is left
+ * on so that if one ever IS authored, the build logs it instead of silently
+ * dropping it.
+ */
+import { PortableText } from 'astro-portabletext'
+import type { PortableTextProps } from 'astro-portabletext/types'
+import Callout from './Callout.astro'
+import FaqBlock from './FaqBlock.astro'
+import CtaBlock from './CtaBlock.astro'
+import SpecsTable from './SpecsTable.astro'
+import RelatedLinks from './RelatedLinks.astro'
+import CoeCalculator from './CoeCalculator.astro'
+
+interface Props {
+  value: PortableTextProps['value']
+}
+
+const { value } = Astro.props
+
+// Prose styling — h2/h3/p/ul/ol/li/strong/a — comes from `.prose-body` in
+// ProseLayout, so only the custom types need components.
+const components = {
+  type: {
+    callout: Callout,
+    faq: FaqBlock,
+    cta: CtaBlock,
+    specsTable: SpecsTable,
+    relatedLinks: RelatedLinks,
+    coeCalculator: CoeCalculator,
+  },
+}
+---
+
+<PortableText value={value} components={components} />
