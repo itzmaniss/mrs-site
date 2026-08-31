@@ -13,6 +13,49 @@ export default defineConfig({
   // at runtime, so no route may fetch on request. See AGENTS.md.
   output: 'static',
 
+  // Content Security Policy. Astro hashes every inline script and style it
+  // emits and writes them into a <meta http-equiv> on each page. That is the
+  // only mechanism that works here: the site has no external script files at
+  // all — every script is small enough that Astro inlines it into the document
+  // — so a fixed `script-src 'self'` header would block the theme toggle, the
+  // menu and the scroll handler, and a hand-maintained hash list would go stale
+  // on the next build.
+  //
+  // The site loads nothing off-origin: images come from astro:assets, fonts are
+  // @fontsource (bundled), and Sanity is read at build time only. Hence 'self'
+  // everywhere and 'none' for the things nothing uses — there are no forms, no
+  // fetch calls, no workers and no manifest.
+  //
+  // Two directives a <meta> CSP cannot carry — frame-ancestors, which every
+  // browser ignores there, and HSTS, which is not CSP at all — live in
+  // config/nginx.conf and public/_headers instead. Keep those in sync with this.
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "img-src 'self'",
+        "font-src 'self'",
+        "connect-src 'none'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'none'",
+      ],
+      // PhoneFrame computes --pf-width/--pf-scale/--pf-bezel per instance from
+      // its `variant` and `width` props, so its custom properties can only ride
+      // on a style attribute — there is no fixed set of values to hoist into a
+      // class. A hash is no help either: CSP ignores hashes for style
+      // attributes unless 'unsafe-hashes' is present, and the hash would change
+      // whenever a caller passes a different width.
+      //
+      // Scoped to `attribute` on purpose. This relaxes style-src-attr only;
+      // <style> and <link rel=stylesheet> stay on style-src-elem with Astro's
+      // generated hashes, so an injected stylesheet is still refused.
+      styleDirective: {
+        resources: [{ resource: "'unsafe-inline'", kind: 'attribute' }],
+      },
+    },
+  },
+
   // No React. Nothing on the site is an island — the accordions and the menu
   // are <details>, the theme toggle and the phone screens are .astro — and the
   // integration emitted a ~190 KB client runtime into dist/_astro/ that no page
@@ -25,6 +68,17 @@ export default defineConfig({
   // the feat/demo branch DOES have an island (DemoGarage.tsx), so it needs all
   // of the above restored before it can build against this config.
   integrations: [sitemap()],
+
+  // Nothing on this site is authored in Markdown today — guides arrive as
+  // Portable Text and every page is .astro — so this highlighter never runs.
+  // It is set anyway because Shiki, the default, styles tokens with inline
+  // `style` attributes that the CSP above cannot hash, and it warns about that
+  // on every build. Prism emits class names instead, so the warning goes and a
+  // Markdown page added later still gets highlighted (it would need a Prism
+  // theme in global.css to be coloured).
+  markdown: {
+    syntaxHighlight: 'prism',
+  },
 
   // Images: WebP is the delivery standard for this site. <Image> already emits
   // WebP by default, so there is no format config here — set `format` on the
