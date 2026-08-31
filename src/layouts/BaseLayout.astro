@@ -25,7 +25,70 @@ const {
   canonical: canonicalOverride,
 } = Astro.props
 
-const pageTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`
+/**
+ * Roughly what Google renders before it truncates: ~60 characters for a title,
+ * ~160 for a description. Neither is a ranking factor — the cost of overshooting
+ * is that the search engine chooses the cut instead of us, usually mid-word.
+ */
+const TITLE_BUDGET = 60
+const DESCRIPTION_BUDGET = 160
+/**
+ * A sentence-boundary cut is only preferred while it still fills the snippet.
+ * Some ledes open with a short hook — "Singapore's humidity destroys motorcycle
+ * electrics faster than anywhere else." — and stopping there would throw away
+ * half the budget along with the half of the sentence that says what the guide
+ * covers. Below this, the word-boundary cut wins instead.
+ */
+const SENTENCE_CUT_FLOOR = 120
+
+const brandSuffix = ` — ${SITE.name}`
+
+/**
+ * The brand suffix is the part we control, so it is the part that yields. A
+ * title already at the budget gains nothing from ` — MyRideSG` except a
+ * guaranteed ellipsis in the result — and Google appends the site name itself
+ * anyway. Titles that overrun on their own are a copy problem, not a layout
+ * one: they are fixed where they are written, not truncated here.
+ */
+const pageTitle = title
+  ? title.length + brandSuffix.length <= TITLE_BUDGET
+    ? `${title}${brandSuffix}`
+    : title
+  : `${SITE.name} — ${SITE.tagline}`
+
+/**
+ * Guides reuse `description` twice: as the lede paragraph under the h1, and —
+ * when Sanity's seo.metaDescription is empty, which today it is for every
+ * article — as this tag. A lede is written to be read at full length, so some
+ * run past the budget. Clamp the copy of it that goes in <head>; the visible
+ * paragraph is the page's business and is left alone.
+ *
+ * Whole sentences first, because a description that stops at a full stop reads
+ * like it was written that way rather than cut off.
+ */
+function clampDescription(text: string): string {
+  const copy = text.trim()
+  if (copy.length <= DESCRIPTION_BUDGET) return copy
+
+  let kept = ''
+  for (const sentence of copy.split(/(?<=\.)\s+/)) {
+    const candidate = kept ? `${kept} ${sentence}` : sentence
+    if (candidate.length > DESCRIPTION_BUDGET) break
+    kept = candidate
+  }
+  if (kept.length >= SENTENCE_CUT_FLOOR) return kept
+
+  // Nothing usable on a sentence boundary. Cut on a word boundary, then drop a
+  // trailing conjunction so it does not end on "and…".
+  const cut = copy.slice(0, DESCRIPTION_BUDGET - 1)
+  return `${cut
+    .slice(0, cut.lastIndexOf(' '))
+    .replace(/[\s,;:–—-]+$/, '')
+    .replace(/\s+(?:and|or|but|with|plus|as|to|for|of|in|on|at|from)$/i, '')
+    .replace(/[\s,;:–—-]+$/, '')}…`
+}
+
+const metaDescription = clampDescription(description)
 const canonical = canonicalOverride
   ? new URL(canonicalOverride, Astro.site).href
   : new URL(Astro.url.pathname, Astro.site).href
@@ -39,7 +102,7 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
 
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
@@ -55,6 +118,8 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={pageTitle} />
+    {/* Full copy, not the clamped one: a social card renders far more than a
+        search result does, so there is nothing to gain by cutting it here. */}
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={SITE.locale} />

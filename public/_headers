@@ -1,0 +1,24 @@
+# Cloudflare Pages response headers. Production only — the Docker/nginx tester
+# preview ignores this file and gets the same set from config/nginx.conf.
+# Change one, change the other.
+#
+# Astro emits the real Content-Security-Policy as a per-page <meta http-equiv>,
+# because every script on this site is inlined into the document and only the
+# build knows their hashes (see security.csp in astro.config.mjs). The CSP below
+# carries just frame-ancestors, which a <meta> CSP cannot express — browsers
+# ignore it there. Two policies on one page are both enforced, so this adds the
+# framing rule rather than replacing the generated one.
+
+# HSTS carries no includeSubDomains and no preload: myridesg.com has siblings
+# this repo does not own, and preload is a one-way door. Widen it deliberately.
+/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
+  Strict-Transport-Security: max-age=31536000
+
+# Hashed filenames, so they can never go stale.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
