@@ -1,5 +1,5 @@
 ---
-import { NAV, STORE } from '@/consts'
+import { APP, NAV } from '@/consts'
 import ThemeToggle from './ThemeToggle.astro'
 ---
 
@@ -35,7 +35,7 @@ import ThemeToggle from './ThemeToggle.astro'
       <ThemeToggle />
 
       <a
-        href={STORE.ios}
+        href={APP}
         class="hidden min-h-10 items-center rounded-pill bg-ink px-5 text-sm font-semibold text-paper transition-opacity hover:opacity-85 sm:inline-flex"
       >
         Get the app
@@ -59,7 +59,7 @@ import ThemeToggle from './ThemeToggle.astro'
             }
           </ul>
 
-          <a href={STORE.ios} class="site-menu__cta">Get the app</a>
+          <a href={APP} class="site-menu__cta">Get the app</a>
         </div>
       </details>
     </div>
