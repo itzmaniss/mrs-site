@@ -1,0 +1,53 @@
+---
+import ProseLayout from '@/layouts/ProseLayout.astro'
+
+// Google Play requires a web-accessible account-deletion URL for any app with
+// accounts — reachable without installing the app, stating what is deleted and
+// what is retained. The Data safety form points here. Deletion itself happens
+// in-app; this page exists for people who have already uninstalled.
+---
+
+<ProseLayout
+  title="Delete your account"
+  description="How to delete your MyRideSG account and everything in it — from inside the app, or by email if you no longer have it installed."
+>
+  <p>
+    Deleting your MyRideSG account removes your bikes, maintenance logs, fuel and expense
+    records, mileage history, reminders, rewards progress, and any receipt or invoice
+    photos you saved. Deletion is immediate and cannot be undone.
+  </p>
+
+  <h2>If you have the app</h2>
+  <p>
+    Go to <strong>Account → Privacy and data → Delete account</strong>. You will be asked
+    to confirm, and the account is deleted on the spot. No email, no waiting.
+  </p>
+
+  <h2>If you no longer have the app</h2>
+  <p>
+    Email <a href="mailto:hello@myridesg.com">hello@myridesg.com</a> from the address you
+    signed up with, asking us to delete your account. We action deletion requests within
+    seven days and confirm by reply. If you signed in with Apple's Hide My Email, write to
+    us from any address and tell us roughly when you created the account so we can find
+    it.
+  </p>
+
+  <h2>What is kept</h2>
+  <p>
+    Some records may be retained where Singapore law requires it. Anonymous usage
+    analytics are not linked to you once the account is gone, and are deleted on their own
+    180-day schedule either way. Everything else goes.
+  </p>
+
+  <h2>Want a copy first?</h2>
+  <p>
+    Before deleting, you can export everything you have logged as a CSV from
+    <strong>Account → Privacy and data → Export your data</strong>. Export is not
+    available after deletion — there is nothing left to export.
+  </p>
+
+  <p>
+    Questions? See <a href="/support/">Support</a> or read the
+    <a href="/privacy/">Privacy Policy</a>.
+  </p>
+</ProseLayout>
