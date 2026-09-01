@@ -1,0 +1,39 @@
+# Netlify build configuration.
+#
+# This file overrides the dashboard's Build settings, which is the point: the
+# publish directory is the one setting that is both easy to get wrong and
+# silently destructive. Left at the repo root, Netlify would serve the source
+# tree — no index.html, and every file in the repo readable over HTTP.
+#
+# Production for this site is Netlify because myridesg.com sits on Wix
+# nameservers that cannot be changed, and Cloudflare (Workers or Pages) will not
+# issue a certificate for a custom domain on a zone it does not control. Netlify
+# validates against external DNS, so the apex works with a plain A record.
+# See docs/deployment-guide.md.
+
+[build]
+  command = "pnpm build"
+  # astro.config.mjs sets output: 'static'; the build lands here.
+  publish = "dist"
+
+[build.environment]
+  # package.json already carries "packageManager": "pnpm@11.20.0", which Netlify
+  # honours through corepack — this is belt and braces. The version is not
+  # cosmetic: install-script policy lives in pnpm-workspace.yaml under
+  # `allowBuilds`, a pnpm 11 key. On pnpm 10 that key is not understood and the
+  # `esbuild: false` decision recorded there is ignored without an error.
+  # Confirm "pnpm 11" in the build log rather than trusting this.
+  PNPM_VERSION = "11.20.0"
+
+  # package.json requires >=22.12.0. Pinning stops a future image update from
+  # moving Node underneath a build that was working.
+  NODE_VERSION = "22.16.0"
+
+# Response headers come from public/_headers, which Astro copies into dist/.
+# Netlify reads that file natively — it is the same format Cloudflare Pages
+# uses, so the one file serves both and there is nothing to duplicate here.
+#
+# SANITY_PROJECT_ID, SANITY_DATASET and SANITY_API_READ_TOKEN are NOT set here.
+# The token is a secret and belongs in the dashboard; the other two live beside
+# it so all three stay together. Without them the build still SUCCEEDS and
+# renders an empty /guides — check the index after any config change.
