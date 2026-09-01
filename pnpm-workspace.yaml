@@ -12,3 +12,7 @@
 # Flip a package to true only with a reason recorded here.
 allowBuilds:
   esbuild: false
+  workerd: set this to true or false
+minimumReleaseAgeExclude:
+  - '@astrojs/cloudflare@14.2.6'
+  - '@astrojs/internal-helpers@0.11.0'
