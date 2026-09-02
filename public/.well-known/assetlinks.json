@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.myridesg.android",
+      "sha256_cert_fingerprints": [
+        "75:89:C9:1C:31:90:D7:27:65:A8:66:9E:DB:1F:58:E7:0E:3D:1F:7A:9A:2B:4B:D1:E9:5A:52:29:4E:2D:88:49",
+        "A5:DD:96:C4:B6:A9:88:7D:DE:53:C7:B9:BE:AE:D9:4F:D3:21:F2:E5:13:9C:F1:B6:E3:60:3B:47:46:1E:CA:36"
+      ]
+    }
+  }
+]

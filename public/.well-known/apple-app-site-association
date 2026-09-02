@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "C25DZ6UMQM.com.myridesg.app",
+        "paths": ["/auth/callback", "/auth/callback/*"]
+      }
+    ]
+  }
+}
