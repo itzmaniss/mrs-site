@@ -1,32 +1,85 @@
 ---
-import { APP } from '@/consts'
+import { ANDROID_LIVE, APP, IOS_LIVE, IOS_TESTING_HREF, STORE, TESTFLIGHT } from '@/consts'
 
 interface Props {
   /** 'dark' sits on a light surface; 'light' sits on a dark surface. */
   tone?: 'dark' | 'light'
+  /**
+   * Centres the buttons and the note under them. A prop rather than a
+   * `justify-center` passed in `class`, because the root is no longer the
+   * button row — that class would land on a column and do nothing.
+   */
+  center?: boolean
   class?: string
 }
 
-const { tone = 'dark', class: className = '' } = Astro.props
+const { tone = 'dark', center = false, class: className = '' } = Astro.props
 
-// One destination, so one button. The iOS/Android pair — and the user-agent
-// script that collapsed it down to the relevant one on a phone — belong to the
-// store-facing site and live on `on-release`; there is nothing to route by
-// platform while the app is reached on the web.
-const button =
-  tone === 'light'
-    ? 'bg-paper text-ink hover:opacity-85'
-    : 'bg-ember text-on-dark hover:opacity-85'
+// Google Play is published, so Android now has a real destination and takes
+// the primary button. The App Store listing is still in review, but the public
+// TestFlight build means iOS has a real destination too — so it is a button
+// rather than the apologetic line of text it was. The web app stays as the
+// route that works on every device.
+const onDark = tone === 'light'
+
+const primary = onDark
+  ? 'bg-paper text-ink hover:opacity-85'
+  : 'bg-ember text-on-dark hover:opacity-85'
+
+const secondary = onDark
+  ? 'border border-white/25 text-on-dark hover:bg-white/10'
+  : 'border border-ink/15 hover:bg-soft'
+
+const note = onDark ? 'text-white/45' : 'text-muted'
+const noteLink = onDark ? 'text-on-dark' : 'text-ink'
+
+const base =
+  'inline-flex min-h-12 items-center rounded-pill px-7 text-md font-semibold transition-opacity'
 ---
 
-<div class:list={['flex flex-wrap items-center gap-3', className]}>
-  <a
-    href={APP}
-    class:list={[
-      'inline-flex min-h-12 items-center rounded-pill px-7 text-md font-semibold transition-opacity',
-      button,
-    ]}
-  >
-    Open MyRideSG
-  </a>
+<div class:list={['flex flex-col', center && 'items-center text-center', className]}>
+  <div class:list={['flex flex-wrap items-center gap-3', center && 'justify-center']}>
+    {
+      ANDROID_LIVE && (
+        <a href={STORE.android} class:list={[base, primary]}>
+          Get it on Google Play
+        </a>
+      )
+    }
+
+    {
+      IOS_LIVE ? (
+        <a href={STORE.ios} class:list={[base, primary]}>
+          Download on the App Store
+        </a>
+      ) : (
+        <a href={TESTFLIGHT} class:list={[base, secondary]}>
+          iPhone — TestFlight
+        </a>
+      )
+    }
+
+    <a href={APP} class:list={[base, secondary]}>
+      Open MyRideSG
+    </a>
+  </div>
+
+  {
+    !IOS_LIVE && (
+      /* TestFlight needs Apple's testing app installed before the link does
+         anything, which is not obvious to someone who has never used it — and
+         a public link can fill up or be closed, hence the email fallback. */
+      <p class:list={['mt-4 text-sm leading-relaxed', note]}>
+        The App Store listing is still in review. Install TestFlight from the
+        App Store, then open the link above — or, if the build is full,{' '}
+        <a
+          href={IOS_TESTING_HREF}
+          class:list={['font-semibold underline underline-offset-4', noteLink]}
+        >
+          email us to join the testing community
+        </a>
+        .
+      </p>
+    )
+  }
 </div>

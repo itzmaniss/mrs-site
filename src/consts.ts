@@ -23,15 +23,65 @@ export const APP = 'https://app.myridesg.com'
  * Store links. Identifiers read from myridesg-v2:
  *   iOS      — apps/mobile/eas.json → submit.production.ios.ascAppId
  *   Android  — apps/mobile/app.config.ts → android.package
- *
- * Unused on `main` — kept because the store-facing site is what the
- * `on-release` branch restores, and these identifiers are the awkward part to
- * re-derive. Do not link them from here until the listings are published.
  */
 export const STORE = {
   ios: 'https://apps.apple.com/app/id6788268752',
   android: 'https://play.google.com/store/apps/details?id=app.myridesg.android',
 } as const
+
+/**
+ * The two listings are in different states, so they do not share a flag.
+ * Google Play is published. The App Store listing is still in review at Apple,
+ * and there is no date worth promising — so iOS is not linked; it is routed to
+ * the testing invite instead. Flip IOS_LIVE the day the listing clears review
+ * and every call to action picks it up.
+ */
+export const ANDROID_LIVE = true
+export const IOS_LIVE = false
+
+/**
+ * Public TestFlight link. While the App Store listing is in review this is the
+ * real iOS destination — no invite to issue, the reader installs it. Apple
+ * caps a public link at 10,000 testers and it can be closed at any time, so
+ * IOS_TESTING_HREF below stays as the fallback rather than being deleted.
+ */
+export const TESTFLIGHT = 'https://testflight.apple.com/join/AQwehSsW'
+
+/**
+ * Testing-community invites, deliberately not the hello@ support inbox — these
+ * are issued by hand against a store account, not answered as support tickets.
+ */
+export const EARLY_ACCESS_EMAIL = 'myridesingapore@gmail.com'
+
+/**
+ * The iOS testing request, pre-filled — only needed when the TestFlight build
+ * is full or closed. mailto bodies need percent-encoding, because a raw
+ * newline or & truncates the body in some clients.
+ *
+ * All three fields are asked for because the store email is what a hand-issued
+ * invite is actually made out to, and it is routinely NOT the address someone
+ * signed up with.
+ */
+export const IOS_TESTING_HREF =
+  `mailto:${EARLY_ACCESS_EMAIL}` +
+  `?subject=${encodeURIComponent('iOS testing community')}` +
+  `&body=${encodeURIComponent(
+    [
+      'Hi MyRideSG team,',
+      '',
+      'I am on iPhone and the TestFlight build is not accepting testers.',
+      'Please add me to the testing community.',
+      '',
+      '--- Please fill in all three ---',
+      '',
+      '1. Login email:',
+      '2. Device OS (iOS or Android):',
+      '3. App Store / Play Store email:',
+      '   (often different from your login email)',
+      '',
+      'Thanks!',
+    ].join('\n'),
+  )}`
 
 /**
  * Primary navigation. Kept flat — the marketing site is deliberately shallow.
