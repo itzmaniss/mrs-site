@@ -1,5 +1,5 @@
 ---
-import { ANDROID_LIVE, APP, IOS_LIVE, IOS_TESTING_HREF, STORE, TESTFLIGHT } from '@/consts'
+import { ANDROID_LIVE, IOS_LIVE, IOS_TESTING_HREF, STORE, TESTFLIGHT } from '@/consts'
 
 interface Props {
   /** 'dark' sits on a light surface; 'light' sits on a dark surface. */
@@ -15,11 +15,18 @@ interface Props {
 
 const { tone = 'dark', center = false, class: className = '' } = Astro.props
 
-// Google Play is published, so Android now has a real destination and takes
-// the primary button. The App Store listing is still in review, but the public
-// TestFlight build means iOS has a real destination too — so it is a button
-// rather than the apologetic line of text it was. The web app stays as the
-// route that works on every device.
+// Both listings are published, so the two stores carry equal weight — neither
+// platform should read as the preferred one. The web app button is gone: that
+// product is switched off, and the page it now serves only tells the reader to
+// come back to a store.
+//
+// Both buttons are always rendered, so a crawler and a reader without
+// JavaScript see the pair. BaseLayout hides the irrelevant one on a phone it
+// recognises — see the platform script there.
+//
+// The iOS branch below falls back to the public TestFlight build rather than
+// disappearing, so pulling IOS_LIVE leaves a working destination instead of a
+// hole. Same for Android.
 const onDark = tone === 'light'
 
 const primary = onDark
@@ -41,7 +48,7 @@ const base =
   <div class:list={['flex flex-wrap items-center gap-3', center && 'justify-center']}>
     {
       ANDROID_LIVE && (
-        <a href={STORE.android} class:list={[base, primary]}>
+        <a href={STORE.android} class:list={[base, primary]} data-store="android">
           Get it on Google Play
         </a>
       )
@@ -49,19 +56,16 @@ const base =
 
     {
       IOS_LIVE ? (
-        <a href={STORE.ios} class:list={[base, primary]}>
+        <a href={STORE.ios} class:list={[base, primary]} data-store="ios">
           Download on the App Store
         </a>
       ) : (
-        <a href={TESTFLIGHT} class:list={[base, secondary]}>
+        <a href={TESTFLIGHT} class:list={[base, secondary]} data-store="ios">
           iPhone — TestFlight
         </a>
       )
     }
 
-    <a href={APP} class:list={[base, secondary]}>
-      Open MyRideSG
-    </a>
   </div>
 
   {

@@ -1,6 +1,6 @@
 ---
 import '@/styles/global.css'
-import { SITE } from '@/consts'
+import { SITE, STORE } from '@/consts'
 
 interface Props {
   /** Page title. Rendered as "<title> — MyRideSG"; omit on the home page. */
@@ -207,6 +207,42 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
         history.replaceState(history.state, '', location.pathname + location.search)
       })()
     </script>
+    {/* Routes the download calls to action at the reader's own store.
+        Inline and unbundled for the same reason as the theme script: the
+        platform has to be on <html> before first paint, or a phone shows both
+        store buttons and then drops one, which is a visible reflow directly
+        under the headline.
+
+        Detection is deliberately narrow. Only a phone or tablet we can name
+        gets routed; everything else — desktop, an unknown UA, a crawler, or
+        JavaScript switched off — keeps both buttons, which is the honest
+        default rather than a degraded one. iPadOS reports itself as a Mac, so
+        the touch check is what separates it from a desktop Safari that should
+        keep seeing both.
+
+        The href rewrite waits for DOMContentLoaded because those links do not
+        exist yet. A click landing before then falls through to the page's own
+        download section, which is the right destination anyway. */}
+    <script is:inline define:vars={{ STORE }}>
+      ;(() => {
+        const ua = navigator.userAgent
+        const platform = /iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && 'ontouchend' in document)
+          ? 'ios'
+          : /Android/.test(ua)
+            ? 'android'
+            : ''
+
+        if (!platform) return
+        document.documentElement.dataset.platform = platform
+
+        const href = platform === 'ios' ? STORE.ios : STORE.android
+        addEventListener('DOMContentLoaded', () => {
+          for (const link of document.querySelectorAll('[data-store-link]')) {
+            link.href = href
+          }
+        })
+      })()
+    </script>
   </head>
 
   <body class="flex min-h-dvh flex-col">
@@ -229,5 +265,14 @@ const socialImage = ogImage ? new URL(ogImage, Astro.site).href : undefined
      than the viewport lays out exactly as it did before. */
   body > main {
     flex-grow: 1;
+  }
+
+  /* The other half of the platform routing in <head>. Done in CSS rather than
+     by removing the node, so the markup a crawler sees is the full pair and
+     the decision is presentational — which is what it is. Neither rule matches
+     until the script sets the attribute, so the no-JS default is both. */
+  html[data-platform='ios'] [data-store='android'],
+  html[data-platform='android'] [data-store='ios'] {
+    display: none;
   }
 </style>

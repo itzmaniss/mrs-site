@@ -1,5 +1,11 @@
 ---
-import { APP, NAV } from '@/consts'
+import { NAV } from '@/consts'
+
+// "Get the app" used to open the web app, which is switched off. It now aims
+// at the download block on the home page, and BaseLayout's platform script
+// rewrites it straight to the reader's own store on a phone — so a tap on a
+// phone installs, while a desktop click lands somewhere that shows both.
+const GET_THE_APP = '/#get'
 import ThemeToggle from './ThemeToggle.astro'
 ---
 
@@ -35,7 +41,8 @@ import ThemeToggle from './ThemeToggle.astro'
       <ThemeToggle />
 
       <a
-        href={APP}
+        href={GET_THE_APP}
+        data-store-link
         class="hidden min-h-10 items-center rounded-pill bg-ink px-5 text-sm font-semibold text-paper transition-opacity hover:opacity-85 sm:inline-flex"
       >
         Get the app
@@ -59,7 +66,7 @@ import ThemeToggle from './ThemeToggle.astro'
             }
           </ul>
 
-          <a href={APP} class="site-menu__cta">Get the app</a>
+          <a href={GET_THE_APP} data-store-link class="site-menu__cta">Get the app</a>
         </div>
       </details>
     </div>

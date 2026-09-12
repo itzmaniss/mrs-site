@@ -12,12 +12,10 @@ export const SITE = {
   locale: 'en_SG',
 } as const
 
-/**
- * Where every call to action points. Until the store listings are live the app
- * is reached on the web, so there is one destination and nothing to route by
- * platform.
- */
-export const APP = 'https://app.myridesg.com'
+// The web app at app.myridesg.com is switched off — the domain now serves a
+// page whose only advice is to install from a store. The APP constant that
+// used to live here is gone rather than left unused, so nothing can quietly
+// link a reader back into a dead end. Downloads go through STORE below.
 
 /**
  * Store links. Identifiers read from myridesg-v2:
@@ -25,25 +23,29 @@ export const APP = 'https://app.myridesg.com'
  *   Android  — apps/mobile/app.config.ts → android.package
  */
 export const STORE = {
-  ios: 'https://apps.apple.com/app/id6788268752',
+  /**
+   * Storefront-qualified. The bare apps.apple.com/app/id… form 404s — it needs
+   * a country segment — so this is not merely the prettier of two working
+   * URLs.
+   */
+  ios: 'https://apps.apple.com/sg/app/myridesg/id6788268752',
   android: 'https://play.google.com/store/apps/details?id=app.myridesg.android',
 } as const
 
 /**
- * The two listings are in different states, so they do not share a flag.
- * Google Play is published. The App Store listing is still in review at Apple,
- * and there is no date worth promising — so iOS is not linked; it is routed to
- * the testing invite instead. Flip IOS_LIVE the day the listing clears review
- * and every call to action picks it up.
+ * The listings do not share a flag, because they have not moved together —
+ * though as of the App Store approval both are true. iOS was routed to the
+ * public TestFlight build while its listing was in review. The flags stay so
+ * either platform can be pulled back to that state, from one place, without
+ * restructuring every call to action.
  */
 export const ANDROID_LIVE = true
-export const IOS_LIVE = false
+export const IOS_LIVE = true
 
 /**
- * Public TestFlight link. While the App Store listing is in review this is the
- * real iOS destination — no invite to issue, the reader installs it. Apple
- * caps a public link at 10,000 testers and it can be closed at any time, so
- * IOS_TESTING_HREF below stays as the fallback rather than being deleted.
+ * Public TestFlight link — the iOS destination whenever IOS_LIVE is false.
+ * Unused while the App Store listing is up, kept because it is what a rollback
+ * needs and because the beta outlives the launch.
  */
 export const TESTFLIGHT = 'https://testflight.apple.com/join/AQwehSsW'
 
